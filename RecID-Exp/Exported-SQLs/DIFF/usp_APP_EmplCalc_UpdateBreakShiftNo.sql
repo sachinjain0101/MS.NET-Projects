@@ -1,0 +1,3 @@
+Comparing files C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_APP_EmplCalc_UpdateBreakShiftNo.sql and C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_APP_EMPLCALC_UPDATEBREAKSHIFTNO.SQL
+FC: no differences encountered
+

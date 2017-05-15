@@ -1,0 +1,3 @@
+Comparing files C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_PClock_GetHoursSummary.sql and C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_PCLOCK_GETHOURSSUMMARY.SQL
+FC: no differences encountered
+

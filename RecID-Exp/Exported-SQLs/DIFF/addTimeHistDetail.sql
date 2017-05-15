@@ -1,0 +1,3 @@
+Comparing files C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\addTimeHistDetail.sql and C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\ADDTIMEHISTDETAIL.SQL
+FC: no differences encountered
+

@@ -1,0 +1,9 @@
+Comparing files C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_LBR_SrchEmpls.sql and C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_LBR_SRCHEMPLS.SQL
+***** C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_LBR_SrchEmpls.sql
+  101:  END -- fetch status <> -1
+  102:  CLOSE cEmpls
+***** C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_LBR_SRCHEMPLS.SQL
+  100:  END -- fetch status <> -1
+  101:  CLOSE cEmpls
+*****
+

@@ -1,0 +1,3 @@
+Comparing files C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_WEB1_Approval_UpdateRecord.sql and C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_WEB1_APPROVAL_UPDATERECORD.SQL
+FC: no differences encountered
+

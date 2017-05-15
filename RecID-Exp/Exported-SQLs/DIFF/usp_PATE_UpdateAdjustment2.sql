@@ -1,0 +1,9 @@
+Comparing files C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_PATE_UpdateAdjustment2.sql and C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_PATE_UPDATEADJUSTMENT2.SQL
+***** C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_PATE_UpdateAdjustment2.sql
+  101:          WHERE THDRecordId = @THDRecordID
+  102:          AND Brand <> @Brand
+***** C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_PATE_UPDATEADJUSTMENT2.SQL
+  100:          WHERE THDRecordId = @THDRecordID
+  101:          AND Brand <> @Brand
+*****
+

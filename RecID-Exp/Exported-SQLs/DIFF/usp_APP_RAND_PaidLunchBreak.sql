@@ -1,0 +1,3 @@
+Comparing files C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_APP_RAND_PaidLunchBreak.sql and C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_APP_RAND_PAIDLUNCHBREAK.SQL
+FC: no differences encountered
+

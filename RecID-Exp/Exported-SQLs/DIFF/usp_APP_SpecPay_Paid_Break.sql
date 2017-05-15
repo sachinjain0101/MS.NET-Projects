@@ -1,0 +1,9 @@
+Comparing files C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_APP_SpecPay_Paid_Break.sql and C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_APP_SPECPAY_PAID_BREAK.SQL
+***** C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_APP_SpecPay_Paid_Break.sql
+  101:  ) + ' hours '
+  102:                END
+***** C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_APP_SPECPAY_PAID_BREAK.SQL
+  100:  ) + ' hours '
+  101:                END
+*****
+

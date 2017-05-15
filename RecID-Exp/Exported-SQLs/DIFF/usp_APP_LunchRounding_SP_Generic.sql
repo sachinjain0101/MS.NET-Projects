@@ -1,0 +1,3 @@
+Comparing files C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_APP_LunchRounding_SP_Generic.sql and C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_APP_LUNCHROUNDING_SP_GENERIC.SQL
+FC: no differences encountered
+

@@ -1,0 +1,12 @@
+Comparing files C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_Web1_AddAdjustment.sql and C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_WEB1_ADDADJUSTMENT.SQL
+***** C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_Web1_AddAdjustment.sql
+   34:      )
+   35:  AS 
+   36:  --*/
+   38:  /*
+***** C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_WEB1_ADDADJUSTMENT.SQL
+   34:      )
+   35:  AS --*/
+   37:  /*
+*****
+

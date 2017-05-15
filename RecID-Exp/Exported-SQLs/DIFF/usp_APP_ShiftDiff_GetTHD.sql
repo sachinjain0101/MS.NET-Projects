@@ -1,0 +1,3 @@
+Comparing files C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_APP_ShiftDiff_GetTHD.sql and C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_APP_SHIFTDIFF_GETTHD.SQL
+FC: no differences encountered
+

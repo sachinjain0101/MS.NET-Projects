@@ -1,0 +1,3 @@
+Comparing files C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_CigTrans_GetTimeHistDetail.sql and C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_CIGTRANS_GETTIMEHISTDETAIL.SQL
+FC: no differences encountered
+

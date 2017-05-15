@@ -1,0 +1,3 @@
+Comparing files C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_DavitaColoShiftDiff03.sql and C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_DAVITACOLOSHIFTDIFF03.SQL
+FC: no differences encountered
+

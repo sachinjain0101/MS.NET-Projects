@@ -1,0 +1,3 @@
+Comparing files C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_SetBreakAdj_ShiftNo.sql and C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_SETBREAKADJ_SHIFTNO.SQL
+FC: no differences encountered
+

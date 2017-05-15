@@ -1,0 +1,3 @@
+Comparing files C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_APP_TCPunchImporter_AddAdjustment.sql and C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_APP_TCPUNCHIMPORTER_ADDADJUSTMENT.SQL
+FC: no differences encountered
+

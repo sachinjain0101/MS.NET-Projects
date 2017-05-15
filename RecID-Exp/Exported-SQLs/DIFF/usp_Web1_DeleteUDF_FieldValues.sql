@@ -1,0 +1,3 @@
+Comparing files C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_Web1_DeleteUDF_FieldValues.sql and C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_WEB1_DELETEUDF_FIELDVALUES.SQL
+FC: no differences encountered
+

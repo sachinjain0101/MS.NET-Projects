@@ -1,0 +1,9 @@
+Comparing files C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_APP_GenericPayrollUpload_GetRecs_RDRM_Query2.sql and C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_APP_GENERICPAYROLLUPLOAD_GETRECS_RDRM_QUERY2.SQL
+***** C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_APP_GenericPayrollUpload_GetRecs_RDRM_Query2.sql
+  101:  INNER JOIN TimeHistory..tblPeriodEndDates ped WITH(NOLOCK)  
+  102:  ON ped.Client = tmp.Client  
+***** C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_APP_GENERICPAYROLLUPLOAD_GETRECS_RDRM_QUERY2.SQL
+  100:  INNER JOIN TimeHistory..tblPeriodEndDates ped WITH(NOLOCK)  
+  101:  ON ped.Client = tmp.Client  
+*****
+

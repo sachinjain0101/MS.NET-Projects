@@ -1,0 +1,9 @@
+Comparing files C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_RPTForm4SEW.sql and C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_RPTFORM4SEW.SQL
+***** C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_RPTForm4SEW.sql
+  101:          ELSE IF @Date between '4/29/2004' and '6/02/2004'
+  102:                  SET @Ref1 = '13/2004'
+***** C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_RPTFORM4SEW.SQL
+  100:          ELSE IF @Date between '4/29/2004' and '6/02/2004'
+  101:                  SET @Ref1 = '13/2004'
+*****
+

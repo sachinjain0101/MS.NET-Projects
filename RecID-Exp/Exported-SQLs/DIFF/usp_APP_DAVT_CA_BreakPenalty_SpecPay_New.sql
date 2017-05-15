@@ -1,0 +1,9 @@
+Comparing files C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_APP_DAVT_CA_BreakPenalty_SpecPay_New.sql and C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_APP_DAVT_CA_BREAKPENALTY_SPECPAY_NEW.SQL
+***** C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_APP_DAVT_CA_BreakPenalty_SpecPay_New.sql
+  101:  and t.Hours <> 0.00
+  102:  and t.InDay < 8 and t.OutDay < 8
+***** C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_APP_DAVT_CA_BREAKPENALTY_SPECPAY_NEW.SQL
+  100:  and t.Hours <> 0.00
+  101:  and t.InDay < 8 and t.OutDay < 8
+*****
+

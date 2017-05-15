@@ -1,0 +1,3 @@
+Comparing files C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_APP_DaviClose_EmpsSalMissPunches.sql and C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_APP_DAVICLOSE_EMPSSALMISSPUNCHES.SQL
+FC: no differences encountered
+

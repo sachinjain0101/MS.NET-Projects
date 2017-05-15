@@ -1,0 +1,9 @@
+Comparing files C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_APP_GenericPayrollUpload_GetRecs_AMED_GetData.sql and C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_APP_GENERICPAYROLLUPLOAD_GETRECS_AMED_GETDATA.SQL
+***** C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_APP_GenericPayrollUpload_GetRecs_AMED_GetData.sql
+  201:    --
+  202:    Delete from #tmpSSNs where PayRecordsSent <> '1/1/1970'
+***** C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_APP_GENERICPAYROLLUPLOAD_GETRECS_AMED_GETDATA.SQL
+  200:    --
+  201:    Delete from #tmpSSNs where PayRecordsSent <> '1/1/1970'
+*****
+

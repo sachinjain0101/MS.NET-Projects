@@ -1,0 +1,9 @@
+Comparing files C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\Tempo.usp_UpdateRestBreaks.sql and C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\TEMPO.USP_UPDATERESTBREAKS.SQL
+***** C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\Tempo.usp_UpdateRestBreaks.sql
+  101:                  )
+  102:        END
+***** C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\TEMPO.USP_UPDATERESTBREAKS.SQL
+  100:                  )
+  101:        END
+*****
+

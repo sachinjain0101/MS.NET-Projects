@@ -1,0 +1,9 @@
+Comparing files C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_APP_DAVT_UploadPS_GetUploadRecs_PPED_01052013.sql and C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_APP_DAVT_UPLOADPS_GETUPLOADRECS_PPED_01052013.SQL
+***** C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_APP_DAVT_UploadPS_GetUploadRecs_PPED_01052013.sql
+  101:            SET @ShiftZeroCount = (
+  102:              SELECT COUNT(*) FROM tblTimeHistDetail with (nolock)
+***** C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_APP_DAVT_UPLOADPS_GETUPLOADRECS_PPED_01052013.SQL
+  100:            SET @ShiftZeroCount = (
+  101:              SELECT COUNT(*) FROM tblTimeHistDetail with (nolock)
+*****
+

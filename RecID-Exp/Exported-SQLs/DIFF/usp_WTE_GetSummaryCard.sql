@@ -1,0 +1,9 @@
+Comparing files C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_WTE_GetSummaryCard.sql and C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_WTE_GETSUMMARYCARD.SQL
+***** C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_WTE_GetSummaryCard.sql
+  101:  N 1 ELSE 0 END) AS MP6,
+  102:    SUM(CASE WHEN TransDate = @Date7 AND (thd.InDay IN (10, 11) OR thd.OutDay IN (10, 11) AND thd.RecordID <> @MPMinRecordID) THE
+***** C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_WTE_GETSUMMARYCARD.SQL
+  100:  N 1 ELSE 0 END) AS MP6,
+  101:    SUM(CASE WHEN TransDate = @Date7 AND (thd.InDay IN (10, 11) OR thd.OutDay IN (10, 11) AND thd.RecordID <> @MPMinRecordID) THE
+*****
+

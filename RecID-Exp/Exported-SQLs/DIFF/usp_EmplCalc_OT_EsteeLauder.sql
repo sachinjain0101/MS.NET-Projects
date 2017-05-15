@@ -1,0 +1,3 @@
+Comparing files C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_EmplCalc_OT_EsteeLauder.sql and C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_EMPLCALC_OT_ESTEELAUDER.SQL
+FC: no differences encountered
+

@@ -1,0 +1,9 @@
+Comparing files C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_CECLOCK_save_fixedPunch.sql and C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_CECLOCK_SAVE_FIXEDPUNCH.SQL
+***** C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_CECLOCK_save_fixedPunch.sql
+    1:  CREATE PROC [dbo].[usp_CECLOCK_save_fixedPunch]
+    2:  (
+***** C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_CECLOCK_SAVE_FIXEDPUNCH.SQL
+    1:  Create PROCEDURE [dbo].[usp_CECLOCK_save_fixedPunch]
+    2:  (
+*****
+

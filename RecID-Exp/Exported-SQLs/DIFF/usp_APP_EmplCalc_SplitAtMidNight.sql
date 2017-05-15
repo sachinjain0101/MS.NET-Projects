@@ -1,0 +1,3 @@
+Comparing files C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_APP_EmplCalc_SplitAtMidNight.sql and C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_APP_EMPLCALC_SPLITATMIDNIGHT.SQL
+FC: no differences encountered
+

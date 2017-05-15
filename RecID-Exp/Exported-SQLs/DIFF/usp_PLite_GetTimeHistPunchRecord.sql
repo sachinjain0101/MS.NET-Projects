@@ -1,0 +1,3 @@
+Comparing files C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_PLite_GetTimeHistPunchRecord.sql and C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_PLITE_GETTIMEHISTPUNCHRECORD.SQL
+FC: no differences encountered
+

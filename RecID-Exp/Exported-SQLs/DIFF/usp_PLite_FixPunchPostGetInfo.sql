@@ -1,0 +1,3 @@
+Comparing files C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_PLite_FixPunchPostGetInfo.sql and C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_PLITE_FIXPUNCHPOSTGETINFO.SQL
+FC: no differences encountered
+

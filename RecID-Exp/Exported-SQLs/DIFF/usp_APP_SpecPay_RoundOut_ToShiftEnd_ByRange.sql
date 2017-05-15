@@ -1,0 +1,3 @@
+Comparing files C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_APP_SpecPay_RoundOut_ToShiftEnd_ByRange.sql and C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_APP_SPECPAY_ROUNDOUT_TOSHIFTEND_BYRANGE.SQL
+FC: no differences encountered
+

@@ -1,0 +1,9 @@
+Comparing files C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_CigTrans_UpdatePunchDetail3.sql and C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_CIGTRANS_UPDATEPUNCHDETAIL3.SQL
+***** C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_CigTrans_UpdatePunchDetail3.sql
+  101:  DECLARE @ActualOutTime datetime
+  102:  DECLARE @InUserCode varchar(5)
+***** C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_CIGTRANS_UPDATEPUNCHDETAIL3.SQL
+  100:  DECLARE @ActualOutTime datetime
+  101:  DECLARE @InUserCode varchar(5)
+*****
+

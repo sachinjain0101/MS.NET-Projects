@@ -1,0 +1,9 @@
+Comparing files C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_APP_DAVT_DataExtract_AcutePunches.sql and C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_APP_DAVT_DATAEXTRACT_ACUTEPUNCHES.SQL
+***** C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_APP_DAVT_DataExtract_AcutePunches.sql
+  201:  select Distinct en.FileNo, en.SSN
+  202:  INTO #tmpIpadUsers
+***** C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_APP_DAVT_DATAEXTRACT_ACUTEPUNCHES.SQL
+  200:  select Distinct en.FileNo, en.SSN
+  201:  INTO #tmpIpadUsers
+*****
+

@@ -1,0 +1,3 @@
+Comparing files C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\Reports.rpt_GetTimecardComments_Approver.sql and C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\REPORTS.RPT_GETTIMECARDCOMMENTS_APPROVER.SQL
+FC: no differences encountered
+

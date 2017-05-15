@@ -1,0 +1,9 @@
+Comparing files C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_Web1_ChangeDept.sql and C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_WEB1_CHANGEDEPT.SQL
+***** C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_Web1_ChangeDept.sql
+  201:      IF @TransCount > (SELECT COUNT(RecordID) FROM #tmpRecords)
+  202:      BEGIN
+***** C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_WEB1_CHANGEDEPT.SQL
+  200:      IF @TransCount > (SELECT COUNT(RecordID) FROM #tmpRecords)
+  201:      BEGIN
+*****
+

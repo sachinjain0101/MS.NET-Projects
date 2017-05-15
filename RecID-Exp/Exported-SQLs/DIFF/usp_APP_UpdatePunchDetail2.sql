@@ -1,0 +1,9 @@
+Comparing files C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_APP_UpdatePunchDetail2.sql and C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_APP_UPDATEPUNCHDETAIL2.SQL
+***** C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_APP_UpdatePunchDetail2.sql
+  101:    select @InUserCode = ''
+  102:  end
+***** C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_APP_UPDATEPUNCHDETAIL2.SQL
+  100:    select @InUserCode = ''
+  101:  end
+*****
+

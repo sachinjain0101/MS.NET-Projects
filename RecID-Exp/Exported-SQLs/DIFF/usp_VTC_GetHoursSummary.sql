@@ -1,0 +1,3 @@
+Comparing files C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_VTC_GetHoursSummary.sql and C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_VTC_GETHOURSSUMMARY.SQL
+FC: no differences encountered
+

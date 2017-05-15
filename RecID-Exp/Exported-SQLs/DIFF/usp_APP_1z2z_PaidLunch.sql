@@ -1,0 +1,9 @@
+Comparing files C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_APP_1z2z_PaidLunch.sql and C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_APP_1Z2Z_PAIDLUNCH.SQL
+***** C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_APP_1z2z_PaidLunch.sql
+  101:          AND ea.SSN = o.SSN
+  102:          AND ea.SiteNo = o.SiteNo
+***** C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_APP_1Z2Z_PAIDLUNCH.SQL
+  100:          AND ea.SSN = o.SSN
+  101:          AND ea.SiteNo = o.SiteNo
+*****
+

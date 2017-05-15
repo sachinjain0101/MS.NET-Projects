@@ -1,0 +1,9 @@
+Comparing files C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_ClockAPI_CheckForExceptions.sql and C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_CLOCKAPI_CHECKFOREXCEPTIONS.SQL
+***** C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_ClockAPI_CheckForExceptions.sql
+  101:          order by RecordID desc
+  102:  END
+***** C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_CLOCKAPI_CHECKFOREXCEPTIONS.SQL
+  100:          order by RecordID desc
+  101:  END
+*****
+

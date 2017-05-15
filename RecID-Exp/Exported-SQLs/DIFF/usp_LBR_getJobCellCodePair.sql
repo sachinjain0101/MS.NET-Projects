@@ -1,0 +1,3 @@
+Comparing files C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_LBR_getJobCellCodePair.sql and C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_LBR_GETJOBCELLCODEPAIR.SQL
+FC: no differences encountered
+

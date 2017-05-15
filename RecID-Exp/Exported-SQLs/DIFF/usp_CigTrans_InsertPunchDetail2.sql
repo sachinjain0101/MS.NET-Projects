@@ -1,0 +1,9 @@
+Comparing files C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_CigTrans_InsertPunchDetail2.sql and C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_CIGTRANS_INSERTPUNCHDETAIL2.SQL
+***** C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_CigTrans_InsertPunchDetail2.sql
+  101:  DECLARE @ActualInTime datetime
+  102:  DECLARE @ActualOutTime datetime
+***** C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_CIGTRANS_INSERTPUNCHDETAIL2.SQL
+  100:  DECLARE @ActualInTime datetime
+  101:  DECLARE @ActualOutTime datetime
+*****
+

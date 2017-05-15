@@ -1,0 +1,9 @@
+Comparing files C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_APP_DataExtract_FISE.sql and C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_APP_DATAEXTRACT_FISE.SQL
+***** C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_APP_DataExtract_FISE.sql
+  101:      t.SiteNo,
+  102:      sn.Timezone, 
+***** C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_APP_DATAEXTRACT_FISE.SQL
+  100:      t.SiteNo,
+  101:      sn.Timezone, 
+*****
+

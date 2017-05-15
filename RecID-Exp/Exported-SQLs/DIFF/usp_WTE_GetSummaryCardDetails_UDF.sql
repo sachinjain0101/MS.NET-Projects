@@ -1,0 +1,3 @@
+Comparing files C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_WTE_GetSummaryCardDetails_UDF.sql and C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_WTE_GETSUMMARYCARDDETAILS_UDF.SQL
+FC: no differences encountered
+

@@ -1,0 +1,9 @@
+Comparing files C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_APP_DAVT_DailyExtractv2.sql and C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_APP_DAVT_DAILYEXTRACTV2.SQL
+***** C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_APP_DAVT_DailyExtractv2.sql
+  101:    AND t.GroupCode = @GroupCode
+  102:    AND t.PayrollperiodEndDate = @PPED
+***** C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_APP_DAVT_DAILYEXTRACTV2.SQL
+  100:    AND t.GroupCode = @GroupCode
+  101:    AND t.PayrollperiodEndDate = @PPED
+*****
+

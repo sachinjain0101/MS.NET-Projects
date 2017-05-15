@@ -1,0 +1,9 @@
+Comparing files C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_SplitTimeHistDetailRecord_Orig.sql and C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_SPLITTIMEHISTDETAILRECORD_ORIG.SQL
+***** C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_SplitTimeHistDetailRecord_Orig.sql
+  101:    IF DATEADD(hh, -1, @TimeOffDST) between @InPunch and @OutPunch
+  102:    BEGIN  
+***** C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_SPLITTIMEHISTDETAILRECORD_ORIG.SQL
+  100:    IF DATEADD(hh, -1, @TimeOffDST) between @InPunch and @OutPunch
+  101:    BEGIN  
+*****
+

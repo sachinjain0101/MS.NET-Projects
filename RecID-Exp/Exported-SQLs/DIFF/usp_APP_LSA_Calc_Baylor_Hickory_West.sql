@@ -1,0 +1,3 @@
+Comparing files C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\DB\usp_APP_LSA_Calc_Baylor_Hickory_West.sql and C:\PROJECTS\RECID-EXP\EXPORTED-SQLS\TFS\USP_APP_LSA_CALC_BAYLOR_HICKORY_WEST.SQL
+FC: no differences encountered
+

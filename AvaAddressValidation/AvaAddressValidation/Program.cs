@@ -21,7 +21,7 @@ public class Program {
 
         List<string> lines = new List<string>();
         foreach (Address a in DBOps.GetAddressses(strConnection))
-            lines.Add(a.ResolvePNetAddress(Client, a));
+            lines.Add(a.ValidatePNetAddress(Client, a));
 
         lines.Sort();
 
@@ -49,8 +49,8 @@ public class FileOps {
 
 public class DBOps {
     //const string sql = "SELECT DISTINCT Client, GroupCode, SiteNo, SiteAddr1, SiteAddr2, SiteCity, SiteState, SiteZip FROM CigOrders..tblProdAddress";
-    const string sql = "SELECT 'DAVT' AS Client, 0 as GroupCode, 0 as SiteNo, '640 Martin Luther King Jr Blvd' AS SiteAddr1, 'Ste 200' As SiteAddr2, 'Macon' As SiteCity, 'GA' AS SiteState, '31201' As SiteZip UNION "+
-                       "SELECT 'DAVT' AS Client, 0 as GroupCode, 0 as SiteNo, '640 Martin Luther King Blvd.' AS SiteAddr1, '' As SiteAddr2, 'Macon' As SiteCity, 'GA' AS SiteState, '31201' As SiteZip";
+    const string sql = "SELECT 'DAVT' AS Client, 0 as GroupCode, 0 as SiteNo, '640 Martin Luther King Jr Blvd' AS SiteAddr1, '' As SiteAddr2, 'Macon' As SiteCity, 'GA' AS SiteState, '31201' As SiteZip UNION "+
+                       "SELECT 'DAVT' AS Client, 0 as GroupCode, 0 as SiteNo, '640 Martin Luther King Jr' AS SiteAddr1, '' As SiteAddr2, 'Macon' As SiteCity, 'GA' AS SiteState, '31201' As SiteZip";
 
     public static string Sql => sql;
 
@@ -121,7 +121,7 @@ public class Address {
         this.Postalcode = postalcode;
     }
 
-    public string ResolvePNetAddress(AvaTaxClient Client, Address a) {
+    public string ValidatePNetAddress(AvaTaxClient Client, Address a) {
         string line = "";
         try {
             AddressResolutionModel x = Client.ResolveAddress(a.Line1, a.Line2, Line3, a.City, a.Region, a.Postalcode, Country, AddrCase, Lat, Lon);
@@ -137,7 +137,21 @@ public class Address {
         return line;
     }
 
-
+    public string ResolvePNetAddress(AvaTaxClient Client, Address a) {
+        string line = "";
+        try {
+            AddressResolutionModel x = Client.ResolveAddress(a.Line1, a.Line2, Line3, a.City, a.Region, a.Postalcode, Country, AddrCase, Lat, Lon);
+            if (x.validatedAddresses.Count > 0) {
+                line = "No. of Tax Auth - " + ((x.taxAuthorities != null) ? x.taxAuthorities.Count.ToString() : "NA")
+                                + "\tAddress Type - " + x.validatedAddresses[0].addressType
+                                + "\t" + a.ToString();
+            }
+        } catch (AvaTaxError e) {
+            line = "Error\t" + e.Message + "\t" + a.ToString();
+        }
+        Console.WriteLine(line);
+        return line;
+    }
 
 
     public override String ToString() {

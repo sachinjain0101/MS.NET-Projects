@@ -1,6 +1,5 @@
 ﻿using log4net;
 using log4net.Config;
-using Microsoft.SqlServer.Management.Common;
 using Microsoft.SqlServer.Management.Smo;
 using System;
 using System.Collections.Generic;
@@ -31,36 +30,6 @@ namespace SqlServerScripter {
             LOGGER.Info(server);
 
             try {
-                //String test = "";
-                //test = "IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[zzzSACHINJAIN]') AND type in (N'U'))";
-                //String tableName = "zzzSACHINJAIN";
-                //LOGGER.Info("");
-                //LOGGER.Info("?????????????????????????????????????????????????");
-                //LOGGER.Info("**************" + test);
-                //test = Regex.Replace(test, String.Format(CHECK_STR, tableName, tableName), tableName + "New");
-                //LOGGER.Info("^^^^^^^^^^^^^^^" + test);
-
-                //LinkedList<String> chkLst = new LinkedList<string>();
-                //chkLst.AddLast("a");
-                //chkLst.AddLast("b");
-                //chkLst.AddLast("c");
-                //chkLst.AddLast("d");
-                //chkLst.AddLast("e");
-
-                //foreach(string s in chkLst)
-                //    Console.WriteLine(s);
-
-
-                //foreach (string s in chkLst) {
-                //    if (s=="b")
-                //    chkLst.Find(s).Value = "Y";
-                //}
-
-                //Console.WriteLine("==============");
-                //foreach (string s in chkLst)
-                //    Console.WriteLine(s);
-
-
                 LinkedList<String> chkLst = GetChkList(table, connStr);
                 LinkedList<String> lines = SpecificTableScript(server, database, table);
                 LinkedList<String> outLines = ReplaceObjectNames(chkLst, lines);
@@ -187,7 +156,6 @@ namespace SqlServerScripter {
                     options.IncludeHeaders = true;
                     options.ExtendedProperties = true;
                     options.WithDependencies = true;
-
 
                     StringCollection coll = tbl.Script(options);
                     foreach (string str in coll) {

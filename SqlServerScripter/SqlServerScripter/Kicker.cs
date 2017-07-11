@@ -170,3 +170,25 @@ namespace SqlServerScripter {
         }
     }
 }
+
+/* 
+
+ SELECT 'EXEC dbo.sp_rename '''+name+''' , '''+ name+'Old' + ''';' AS Stmt
+ FROM sys.all_objects WHERE parent_object_id IN(SELECT object_id FROM sys.all_objects WHERE name IN ( 'tblTimeHistDetail' ) )  
+ UNION ALL 
+ SELECT 'EXEC dbo.sp_rename '''+'tblTimeHistDetail.'+name+''' , '''+ name+'Old' + '''' + CASE WHEN is_unique=1 THEN ' ;' ELSE ' , ''INDEX'';' END AS Stmt
+ FROM sys.indexes WHERE object_id IN(SELECT object_id FROM sys.all_objects WHERE name IN ( 'tblTimeHistDetail' ) ) 
+ UNION ALL
+ SELECT 'EXEC dbo.sp_rename '''+name+''' , '''+ name+'Old' + ''';' AS Stmt
+ FROM sys.all_objects WHERE name IN( 'tblTimeHistDetail' )  
+
+ SELECT 'EXEC dbo.sp_rename '''+name+''' , '''+ REPLACE(name,'New','') + ''';' AS Stmt
+ FROM sys.all_objects WHERE parent_object_id IN(SELECT object_id FROM sys.all_objects WHERE name IN ( 'tblTimeHistDetailNew' ) )  
+ UNION ALL 
+ SELECT 'EXEC dbo.sp_rename '''+'tblTimeHistDetailNew.'+name+''' , '''+ REPLACE(name,'New','') + '''' + CASE WHEN is_unique=1 THEN ';' ELSE ' , ''INDEX'';' END AS Stmt
+ FROM sys.indexes WHERE object_id IN(SELECT object_id FROM sys.all_objects WHERE name IN ( 'tblTimeHistDetailNew' ) ) 
+ UNION ALL 
+ SELECT 'EXEC dbo.sp_rename '''+name+''' , '''+ REPLACE(name,'New','') + ''';' AS Stmt
+ FROM sys.all_objects WHERE name IN( 'tblTimeHistDetailNew' )  
+
+*/

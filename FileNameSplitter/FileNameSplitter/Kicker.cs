@@ -35,7 +35,6 @@ namespace FileNameSplitter {
             string dir = @"C:\Users\sachin.jain\Google Drive\#PeopleNet-Work\Reporting Project\Report Templates_";
             foreach (string file in System.IO.Directory.GetFiles(dir)) {
                 string fileName = System.IO.Path.GetFileNameWithoutExtension(file);
-
                 ReportMetaData rmd = new ReportMetaData();
                 rmd.XlsFileName = System.IO.Path.GetFileName(file);
 

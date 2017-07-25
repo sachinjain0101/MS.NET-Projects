@@ -40,24 +40,84 @@ namespace ExcelParser {
             public List<string> Lines { get => _lines; set => _lines = value; }
         }
 
+        public class ReportMetaData {
+            string _reportName = "";
+            string _reportCode = "";
+            string _reportOrder = "";
+            string _dbName = "";
+            string _spName = "";
+            string _xlsFileName = "";
+            const string COMMA = ",";
+
+            public string ReportName { get => _reportName; set => _reportName = value; }
+            public string ReportCode { get => _reportCode; set => _reportCode = value; }
+            public string ReportOrder { get => _reportOrder; set => _reportOrder = value; }
+            public string DbName { get => _dbName; set => _dbName = value; }
+            public string SpName { get => _spName; set => _spName = value; }
+            public string XlsFileName { get => _xlsFileName; set => _xlsFileName = value; }
+
+
+            public override string ToString() {
+                string outstring = this.ReportCode + COMMA + this.ReportName + COMMA + this.ReportOrder + COMMA + this.DbName + COMMA + this.SpName + COMMA + this.XlsFileName;
+                return outstring;
+            }
+        }
+
+        public ReportMetaData ProcessFileName(string file) {
+
+            string fileName = System.IO.Path.GetFileNameWithoutExtension(file);
+            ReportMetaData rmd = new ReportMetaData();
+            rmd.XlsFileName = System.IO.Path.GetFileName(file);
+
+            string[] split1 = fileName.Split('_');
+            string[] split2 = { };
+
+            if (split1.Length > 1) {
+                split2 = split1[1].Split(new string[] { "By" }, StringSplitOptions.None);
+                if (split2.Length > 1) {
+                    rmd.ReportOrder = split2[1];
+                }
+                rmd.ReportCode = split2[0];
+            }
+            rmd.ReportName = split1[0];
+
+            return rmd;
+        }
+
         public static void Main(string[] args) {
 
             Kicker k = new Kicker();
-            string inputDir = @"C:\Users\sachin.jain\Google Drive\#PeopleNet-Work\Reporting Project\Report Templates";
+            string inputDir = @"C:\Users\sachin.jain\Google Drive\#PeopleNet-Work\Reporting Project\Report Templates_";
 
             foreach (string file in System.IO.Directory.EnumerateFiles(inputDir)) {
+                Console.WriteLine("================");
+                Console.WriteLine("================");
                 Console.WriteLine("Processing: " + file);
-                XlData xld = k.getExcelData(file);
-                if (xld != null) {
-                    string outFile = string.Format(SP_COLS, xld.DbName, xld.SpName, DateTime.Now.ToString(DATE_FORMAT));
-                    System.IO.File.WriteAllLines(outFile, xld.Lines);
+                ReportMetaData rmd = k.ProcessFileName(file);
+
+                if (rmd.XlsFileName.ToUpper().Contains(".XLS")) {
+                    XlData xld = k.getExcelData(file);
+
+                    if (xld != null) {
+                        rmd.DbName = xld.DbName;
+                        rmd.SpName = xld.SpName;
+
+                        foreach (string data in xld.Lines) {
+                            Console.WriteLine(rmd.ToString() + COMMA + data);
+                        }
+
+                        //string outFile = string.Format(SP_COLS, xld.DbName, xld.SpName, DateTime.Now.ToString(DATE_FORMAT));
+                        //System.IO.File.WriteAllLines(outFile, xld.Lines);
+                    } else {
+                        Console.WriteLine(rmd.ToString() + COMMA + "???");
+                        //string outFile = string.Format(DUMMY, DateTime.Now.ToString(DATE_FORMAT));
+                        //System.IO.File.WriteAllLines(outFile, new List<string>() { "dummy" });
+                    }
                 } else {
-                    string outFile = string.Format(DUMMY, DateTime.Now.ToString(DATE_FORMAT));
-                    System.IO.File.WriteAllLines(outFile, new List<string>() { "dummy" });
+                    Console.WriteLine(rmd.ToString() + COMMA + "???");
                 }
             }
-
-
+            Console.ReadLine();
         }
 
         static Dictionary<int, int> getCellPosition(Excel.Range xlRange, string searchStr) {

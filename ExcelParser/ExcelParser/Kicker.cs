@@ -1,15 +1,17 @@
-﻿using System;
+﻿using log4net;
+using log4net.Config;
+using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using Excel = Microsoft.Office.Interop.Excel;       //microsoft Excel 14 object in references-> COM tab
+using Excel = Microsoft.Office.Interop.Excel;
 
 namespace ExcelParser {
     class Kicker {
+        private static ILog LOGGER = LogManager.GetLogger(typeof(Kicker));
 
         const string DTL_STR = "%DTL-";
         //const string TMPL_ST_STR = "TemplateStart";
@@ -30,44 +32,11 @@ namespace ExcelParser {
         const string COMMA = ",";
         const string PIPE = "|";
 
-        public class XlData {
-            string _dbName;
-            string _spName;
-            List<string> _lines;
-
-            public string DbName { get => _dbName; set => _dbName = value; }
-            public string SpName { get => _spName; set => _spName = value; }
-            public List<string> Lines { get => _lines; set => _lines = value; }
-        }
-
-        public class ReportMetaData {
-            string _reportName = "";
-            string _reportCode = "";
-            string _reportOrder = "";
-            string _dbName = "";
-            string _spName = "";
-            string _xlsFileName = "";
-            const string COMMA = ",";
-
-            public string ReportName { get => _reportName; set => _reportName = value; }
-            public string ReportCode { get => _reportCode; set => _reportCode = value; }
-            public string ReportOrder { get => _reportOrder; set => _reportOrder = value; }
-            public string DbName { get => _dbName; set => _dbName = value; }
-            public string SpName { get => _spName; set => _spName = value; }
-            public string XlsFileName { get => _xlsFileName; set => _xlsFileName = value; }
-
-
-            public override string ToString() {
-                string outstring = this.ReportCode + COMMA + this.ReportName + COMMA + this.ReportOrder + COMMA + this.DbName + COMMA + this.SpName + COMMA + this.XlsFileName;
-                return outstring;
-            }
-        }
-
         public ReportMetaData ProcessFileName(string file) {
 
-            string fileName = System.IO.Path.GetFileNameWithoutExtension(file);
+            string fileName = Path.GetFileNameWithoutExtension(file);
             ReportMetaData rmd = new ReportMetaData();
-            rmd.XlsFileName = System.IO.Path.GetFileName(file);
+            rmd.XlsFileName = Path.GetFileName(file);
 
             string[] split1 = fileName.Split('_');
             string[] split2 = { };
@@ -85,11 +54,18 @@ namespace ExcelParser {
         }
 
         public static void Main(string[] args) {
+            XmlConfigurator.Configure();
+
+            LOGGER.Info("===> START");
+            string rptDb = ConfigurationManager.AppSettings["RPT_DB_NAME"].ToString();
+            string server = ConfigurationManager.AppSettings["SRV_NAME"].ToString();
+            string connStr = string.Format(ConfigurationManager.ConnectionStrings["CONN_STR"].ToString(), server, rptDb);
 
             Kicker k = new Kicker();
-            string inputDir = @"C:\Users\sachin.jain\Google Drive\#PeopleNet-Work\Reporting Project\Report Templates_";
+            string inputDir = ConfigurationManager.AppSettings["INPUT_DIR"].ToString();
+            inputDir = @"C:\Users\sachin.jain\Google Drive\#PeopleNet-Work\Reporting Project\Report Templates_";
 
-            foreach (string file in System.IO.Directory.EnumerateFiles(inputDir)) {
+            foreach (string file in Directory.EnumerateFiles(inputDir)) {
                 Console.WriteLine("================");
                 Console.WriteLine("================");
                 Console.WriteLine("Processing: " + file);
@@ -107,11 +83,11 @@ namespace ExcelParser {
                         }
 
                         //string outFile = string.Format(SP_COLS, xld.DbName, xld.SpName, DateTime.Now.ToString(DATE_FORMAT));
-                        //System.IO.File.WriteAllLines(outFile, xld.Lines);
+                        //File.WriteAllLines(outFile, xld.Lines);
                     } else {
                         Console.WriteLine(rmd.ToString() + COMMA + "???");
                         //string outFile = string.Format(DUMMY, DateTime.Now.ToString(DATE_FORMAT));
-                        //System.IO.File.WriteAllLines(outFile, new List<string>() { "dummy" });
+                        //File.WriteAllLines(outFile, new List<string>() { "dummy" });
                     }
                 } else {
                     Console.WriteLine(rmd.ToString() + COMMA + "???");

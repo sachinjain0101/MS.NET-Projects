@@ -14,37 +14,87 @@ namespace SqlServerScripter {
     class Kicker {
 
         private static ILog LOGGER = LogManager.GetLogger(typeof(Kicker));
+        public const string SUFFIX_STR = "_NEW";
 
         private static String CHECK_STR = "\\b\\[{0}\\]\\b|\\b{1}\\b";
 
         static void Main(string[] args) {
             XmlConfigurator.Configure();
-
-            String database = ConfigurationManager.AppSettings["DB_NAME"].ToString();
-            String table = ConfigurationManager.AppSettings["TBL_NAME"].ToString();
-            String server = ConfigurationManager.AppSettings["SRV_NAME"].ToString();
-            String connStr = String.Format(ConfigurationManager.ConnectionStrings["CONN_STR"].ToString(), server, database);
             LOGGER.Info("===> START");
-            LOGGER.Info(database);
-            LOGGER.Info(table);
-            LOGGER.Info(server);
 
-            try {
-                LinkedList<String> chkLst = GetChkList(table, connStr);
-                LinkedList<String> lines = SpecificTableScript(server, database, table);
-                LinkedList<String> outLines = ReplaceObjectNames(chkLst, lines);
+            String server = ConfigurationManager.AppSettings["SRV_NAME"].ToString();
+            String tblLstXls = ConfigurationManager.AppSettings["TBL_LIST"].ToString();
+            Dictionary<string, List<CustomTable>> data = ExcelOps.getExcelSheetData(tblLstXls);
 
-                string format = "yyyyMMddHHmmss";
-                String outFile = server + "_" + database + "_" + table + "_" + DateTime.Now.ToString(format) + ".sql";
+            LOGGER.Info("Server: " + server);
+            LOGGER.Info("Table List: " + tblLstXls);
 
-                WriteFile(outFile, outLines);
+            foreach (KeyValuePair<string, List<CustomTable>> kv in data) {
 
-            } catch (Exception e) {
-                LOGGER.Error(e.StackTrace);
+                string k = kv.Key.ToString();
+                string k0 = k.Split(ExcelOps.HYPHEN)[0];
+                string k1 = k.Split(ExcelOps.HYPHEN)[1];
+
+                TblSize size = (TblSize)Enum.Parse(typeof(TblSize), k0);
+
+                String database = k1.Split(ExcelOps.DOT)[0];
+                String schema = k1.Split(ExcelOps.DOT)[1];
+                String table = k1.Split(ExcelOps.DOT)[2];
+
+                String connStr = String.Format(ConfigurationManager.ConnectionStrings["CONN_STR"].ToString(), server, database);
+
+                LOGGER.Info("Table Operation Size: " + size.ToString());
+                LOGGER.Info("Database: " + database);
+                LOGGER.Info("Schema Name: " + schema);
+                LOGGER.Info("Table Name: " + table);
+
+                LinkedList<String> outLines = new LinkedList<string>();
+                switch (size) {
+                    case TblSize.BIG:
+                        outLines = BigOp(connStr, server, database, schema, table, kv.Value);
+                        break;
+                    case TblSize.SMALL:
+                        break;
+                    case TblSize.ERR:
+                        break;
+                }
+
+                if (outLines.Count > 0) {
+                    string format = "yyyyMMddHHmmss";
+                    String outFile = server + "_" + database + "_" +schema+"_"+ table + "_" + DateTime.Now.ToString(format) + ".sql";
+                    WriteFile(outFile, outLines);
+                }
+                LOGGER.Info("======");
             }
 
             LOGGER.Info("===> DONE");
-            Console.ReadLine();
+            //Console.ReadLine();
+        }
+
+
+        public static LinkedList<String> BigOp(string connStr, string server, string database, string schema, string table, List<CustomTable> data) {
+            try {
+                LinkedList<String> chkLst = GetChkList(table, connStr);
+                LinkedList<String> lines = new LinkedList<String>();
+
+                lines = ScriptOps.GenerateScriptUseStmt(database, lines);
+                lines = ScriptOps.GenerateScriptGoStmt(lines);
+                lines = ScriptOps.GenerateScriptTable(server, database, schema, table, lines);
+                lines = ScriptOps.GenerateScriptGoStmt(lines);
+                lines = ScriptOps.GenerateScriptConstraints(server, database, schema, table, lines);
+                lines = ScriptOps.GenerateScriptGoStmt(lines);
+                lines = ScriptOps.GenerateScriptInsert(table, lines);
+                lines = ScriptOps.GenerateScriptGoStmt(lines);
+                lines = ScriptOps.GenerateScriptIndexes(server, database, schema, table, lines);
+                lines = ScriptOps.GenerateScriptGoStmt(lines);
+
+                LinkedList<String> outLines = ReplaceObjectNames(chkLst, lines);
+
+                return outLines;
+            } catch (Exception e) {
+                LOGGER.Error(e.StackTrace);
+            }
+            return null;
         }
 
         static void WriteFile(String outFile, LinkedList<String> output) {
@@ -83,15 +133,17 @@ namespace SqlServerScripter {
         }
 
         static LinkedList<String> ReplaceObjectNames(LinkedList<String> chkLst, LinkedList<String> lines) {
-            LOGGER.Info("Replacing object names with the suffix 'New'");
+            LOGGER.Info("Replacing object names with the suffix " + SUFFIX_STR);
             try {
                 LinkedList<String> outLines = new LinkedList<String>(lines);
 
                 foreach (String chk in chkLst) {
                     foreach (String line in outLines) {
-                        String x = Regex.Replace(line, String.Format(CHECK_STR, chk, chk), chk + "New");
-                        if (x != line)
-                            outLines.Find(line).Value = x;
+                        if (!line.StartsWith("INSERT INTO")) {
+                            String x = Regex.Replace(line, String.Format(CHECK_STR, chk, chk), chk + SUFFIX_STR);
+                            if (x != line)
+                                outLines.Find(line).Value = x;
+                        }
                     }
                 }
                 return outLines;
@@ -101,73 +153,6 @@ namespace SqlServerScripter {
             return null;
         }
 
-
-        static LinkedList<String> SpecificTableScript(String server, String database, String table) {
-            LOGGER.Info("Generating actual table script");
-            try {
-                LinkedList<String> lines = new LinkedList<String>();
-
-                ScriptingOptions scriptOptions = new ScriptingOptions();
-                Server srv = new Server(server);
-                Database db = srv.Databases[database];
-                db.DefaultSchema = "dbo";
-                StringBuilder sb = new StringBuilder();
-                Table tbl = db.Tables[table];
-                if (!tbl.IsSystemObject) {
-                    ScriptingOptions options = new ScriptingOptions();
-                    options.IncludeIfNotExists = true;
-                    options.NoCommandTerminator = false;
-                    options.ToFileOnly = true;
-                    options.AllowSystemObjects = false;
-                    options.Permissions = true;
-                    options.DriAllConstraints = true;
-                    options.SchemaQualify = true;
-                    options.AnsiFile = true;
-                    options.SchemaQualifyForeignKeysReferences = true;
-                    options.Indexes = true;
-                    options.DriIndexes = true;
-                    options.DriClustered = true;
-                    options.DriNonClustered = true;
-                    options.NonClusteredIndexes = true;
-                    options.ClusteredIndexes = true;
-                    options.FullTextIndexes = true;
-                    options.EnforceScriptingOptions = true;
-                    options.IncludeHeaders = true;
-                    options.SchemaQualify = true;
-                    options.NoCollation = true;
-                    options.DriAll = true;
-                    options.DriAllKeys = true;
-                    options.ToFileOnly = true;
-                    options.NoExecuteAs = true;
-                    options.AppendToFile = false;
-                    options.ToFileOnly = false;
-                    options.Triggers = true;
-                    options.IncludeDatabaseContext = false;
-                    options.AnsiPadding = true;
-                    options.FullTextStopLists = true;
-                    options.ScriptBatchTerminator = true;
-                    options.ExtendedProperties = true;
-                    options.FullTextCatalogs = true;
-                    options.XmlIndexes = true;
-                    options.ClusteredIndexes = true;
-                    options.Default = true;
-                    options.DriAll = true;
-                    options.Indexes = true;
-                    options.IncludeHeaders = true;
-                    options.ExtendedProperties = true;
-                    options.WithDependencies = true;
-
-                    StringCollection coll = tbl.Script(options);
-                    foreach (string str in coll) {
-                        lines.AddLast(str);
-                    }
-                }
-                return lines;
-            } catch (Exception err) {
-                LOGGER.Error(err.Message);
-            }
-            return null;
-        }
     }
 }
 

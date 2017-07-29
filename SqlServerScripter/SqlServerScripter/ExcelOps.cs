@@ -66,6 +66,7 @@ namespace SqlServerScripter {
             }
 
             if (!String.IsNullOrEmpty(prevKey) && lct.Count > 0) {
+                lct.Add(ct);
                 data.Add(prevKey, lct);
             }
 

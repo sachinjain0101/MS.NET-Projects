@@ -90,6 +90,7 @@ namespace SqlServerScripter {
                 lines = ScriptOps.GenerateScriptIndexes(server, database, schema, table, lines);
                 lines = ScriptOps.GenerateScriptGoStmt(lines);
                 lines = ReplaceObjectNames(chkDict, lines);
+                lines = ReplaceDataTypes(chkDict, data, lines);
                 lines = ScriptOps.GenerateScriptGoStmt(lines);
                 lines = ScriptOps.SwapObjects(schema,table,chkDict,lines);
                 LinkedList<String> outLines = ScriptOps.GenerateScriptGoStmt(lines);
@@ -152,6 +153,24 @@ namespace SqlServerScripter {
             }
             return null;
         }
+
+        static LinkedList<String> ReplaceDataTypes(OrderedDictionary chkDict, List<CustomTable> data, LinkedList<String> lines) {
+
+            foreach(string line in lines) {
+                if(line.StartsWith("CREATE TABLE")) {
+                    string val = line;
+                    foreach (CustomTable ct in data) {
+                        string str = "[" + ct.ColumnName + "] [" + ct.OldDataType + "]";
+                        string strRpl = "[" + ct.ColumnName + "] [" + ct.NewDataType + "]";
+                        val = val.Replace(str, strRpl);
+                    }
+                    lines.Find(line).Value = val;
+                }
+            }
+
+            return lines;
+        }
+
 
         static LinkedList<String> ReplaceObjectNames(OrderedDictionary chkDict, LinkedList<String> lines) {
             LOGGER.Info("Replacing object names with the suffix " + SUFFIX_STR_NEW);

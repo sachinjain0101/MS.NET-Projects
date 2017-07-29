@@ -1,6 +1,7 @@
 ﻿using log4net;
 using Microsoft.SqlServer.Management.Smo;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
@@ -10,6 +11,55 @@ using System.Threading.Tasks;
 namespace SqlServerScripter {
     class ScriptOps {
         private static ILog LOGGER = LogManager.GetLogger(typeof(ScriptOps));
+        const string DOT = ".";
+        const string SEMI_COLON = " ; ";
+        const string COMMA = " , ";
+
+        public static LinkedList<String> SwapObjects(string schemaName, string tableName, OrderedDictionary chkDict, LinkedList<String> lines) {
+            LOGGER.Info("Generating Script to swap Original to Old and then New to Original");
+            string sql = "EXEC dbo.sp_rename '{0}{1}' , '{2}' {3}";
+
+            string line = "";
+            foreach (DictionaryEntry de in chkDict) {
+                line = "";
+                string obj = de.Key.ToString();
+                string fromObj = obj;
+                string toObj = obj + Kicker.SUFFIX_STR_OLD;
+
+                string ownerObj = schemaName+DOT+tableName+DOT;
+
+                if (de.Value.ToString() == "INDEX")
+                    line = String.Format(sql, ownerObj, fromObj, toObj, ", N'INDEX'");
+                else if (de.Value.ToString() == "PKUQ")
+                    line = String.Format(sql, ownerObj, fromObj, toObj, "");
+                else if (de.Value.ToString() == "TABLE")
+                    line = String.Format(sql, "", fromObj, toObj, "");
+                else
+                    line = String.Format(sql, "", fromObj, toObj, "");
+                lines.AddLast(line + SEMI_COLON);
+            }
+
+            foreach (DictionaryEntry de in chkDict) {
+                line = "";
+                string obj = de.Key.ToString();
+                string fromObj = obj + Kicker.SUFFIX_STR_NEW;
+                string toObj = obj;
+
+                string ownerObj = schemaName + DOT + tableName + Kicker.SUFFIX_STR_NEW + DOT;
+
+                if (de.Value.ToString() == "INDEX")
+                    line = String.Format(sql, ownerObj, fromObj, toObj, ", N'INDEX'");
+                else if (de.Value.ToString() == "PKUQ")
+                    line = String.Format(sql, ownerObj, fromObj, toObj, "");
+                else if (de.Value.ToString() == "TABLE")
+                    line = String.Format(sql, "", fromObj, toObj, "");
+                else
+                    line = String.Format(sql, "", fromObj, toObj, "");
+                lines.AddLast(line + SEMI_COLON);
+            }
+
+            return lines;
+        }
 
         public static LinkedList<String> GenerateScriptUseStmt(string database, LinkedList<String> lines) {
             LOGGER.Info("Generating Use Statement");
@@ -26,16 +76,37 @@ namespace SqlServerScripter {
             return lines;
         }
 
-        public static LinkedList<String> GenerateScriptInsert(String table, LinkedList<String> lines) {
+        public static LinkedList<String> GenerateScriptInsert(String server, String database, string schema, String table, LinkedList<String> lines) {
             LOGGER.Info("Generating Insert INTO Script");
-            string insert = "INSERT INTO {0} SELECT * FROM {1} ;";
-            lines.AddLast(String.Format(insert, table + Kicker.SUFFIX_STR, table));
+
+            Server srv = new Server(server);
+            Database db = srv.Databases[database];
+            db.DefaultSchema = schema;
+            StringBuilder sb = new StringBuilder();
+            Table tbl = db.Tables[table];
+
+            int cnt = 0;
+            string colString = "";
+            foreach (Column col in tbl.Columns) {
+                if (cnt == 0)
+                    colString = col.Name;
+                else
+                    colString += COMMA + col.Name;
+                cnt++;
+            }
+
+            string insertStmt = "INSERT INTO {0} ({1}) SELECT {1} FROM {2} ;";
+            string newTable = table + Kicker.SUFFIX_STR_NEW;
+            string oldTable = table;
+            lines.AddLast("SET QUOTED_IDENTIFIER ON;");
+            lines.AddLast("SET IDENTITY_INSERT "+ newTable + " ON;");
+            lines.AddLast("SET NOCOUNT ON;");
+            lines.AddLast(String.Format(insertStmt, newTable, colString, oldTable));
             return lines;
         }
 
         public static LinkedList<String> GenerateScriptConstraints(String server, String database, string schema, String table, LinkedList<String> lines) {
             LOGGER.Info("Generating Constraint Scripts");
-            ScriptingOptions scriptOptions = new ScriptingOptions();
             Server srv = new Server(server);
             Database db = srv.Databases[database];
             db.DefaultSchema = schema;
@@ -46,13 +117,13 @@ namespace SqlServerScripter {
                 ScriptingOptions options = new ScriptingOptions();
                 options.ScriptSchema = true;
                 foreach (string line in chk.Script(options))
-                    lines.AddLast(line);
+                    lines.AddLast(line + SEMI_COLON);
             }
 
             foreach (Column col in tbl.Columns) {
                 if (col.DefaultConstraint != null)
                     foreach (string line in col.DefaultConstraint.Script())
-                        lines.AddLast(line);
+                        lines.AddLast(line + SEMI_COLON);
             }
 
             return lines;
@@ -71,7 +142,7 @@ namespace SqlServerScripter {
                 options.ScriptSchema = true;
                 options.NoCommandTerminator = false;
                 foreach (string line in idx.Script(options))
-                    lines.AddLast(line);
+                    lines.AddLast(line + SEMI_COLON);
             }
 
             return lines;
@@ -108,48 +179,20 @@ namespace SqlServerScripter {
 
                 if (!tbl.IsSystemObject) {
                     ScriptingOptions options = new ScriptingOptions();
-                    options.IncludeDatabaseContext = true;
                     options.ScriptSchema = true;
-                    options.EnforceScriptingOptions = true;
-                    options.NoCollation = true;
                     options.AnsiPadding = true;
                     options.Default = true;
                     options.NoCommandTerminator = false;
-                    options.SchemaQualify = true;
-                    options.ExtendedProperties = true;
+                    options.ScriptBatchTerminator = true;
+                    //options.SchemaQualify = true;
+                    //options.ExtendedProperties = true;
                     //options.ScriptDrops = true;
                     //options.ToFileOnly = true;
-                    //options.AllowSystemObjects = false;
-                    //options.Permissions = true;
-                    //options.AnsiFile = true;
-                    //options.SchemaQualifyForeignKeysReferences = true;
-                    //options.DriIndexes = true;
-                    //options.DriClustered = true;
-                    //options.DriNonClustered = true;
-                    //options.NonClusteredIndexes = true;
-                    //options.ClusteredIndexes = true;
-                    //options.FullTextIndexes = true;
-                    //options.SchemaQualify = true;
-                    //options.ToFileOnly = true;
-                    //options.NoExecuteAs = true;
-                    //options.AppendToFile = false;
-                    //options.ToFileOnly = false;
-                    //options.Triggers = true;
-                    //options.FullTextStopLists = true;
-                    //options.ScriptBatchTerminator = true;
-                    //options.FullTextCatalogs = true;
-                    //options.XmlIndexes = true;
-                    //options.ClusteredIndexes = true;
-                    //options.DriAll = true;
-                    //options.DriAllConstraints = true;
-                    //options.DriAllKeys = true;
-                    //options.Indexes = true;
-                    //options.IncludeHeaders = true;
-                    //options.WithDependencies = true;
 
-                    StringCollection coll = tbl.Script();
+
+                    StringCollection coll = tbl.Script(options);
                     foreach (string str in coll) {
-                        lines.AddLast(str);
+                        lines.AddLast(str+SEMI_COLON);
                     }
                 }
                 return lines;

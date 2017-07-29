@@ -2,6 +2,7 @@
 using log4net.Config;
 using Microsoft.SqlServer.Management.Smo;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration;
@@ -14,7 +15,8 @@ namespace SqlServerScripter {
     class Kicker {
 
         private static ILog LOGGER = LogManager.GetLogger(typeof(Kicker));
-        public const string SUFFIX_STR = "_NEW";
+        public const string SUFFIX_STR_NEW = "_NEW";
+        public const string SUFFIX_STR_OLD = "_OLD";
 
         private static String CHECK_STR = "\\b\\[{0}\\]\\b|\\b{1}\\b";
 
@@ -74,7 +76,7 @@ namespace SqlServerScripter {
 
         public static LinkedList<String> BigOp(string connStr, string server, string database, string schema, string table, List<CustomTable> data) {
             try {
-                LinkedList<String> chkLst = GetChkList(table, connStr);
+                OrderedDictionary chkDict = GetTableObjects(table, connStr);
                 LinkedList<String> lines = new LinkedList<String>();
 
                 lines = ScriptOps.GenerateScriptUseStmt(database, lines);
@@ -83,12 +85,14 @@ namespace SqlServerScripter {
                 lines = ScriptOps.GenerateScriptGoStmt(lines);
                 lines = ScriptOps.GenerateScriptConstraints(server, database, schema, table, lines);
                 lines = ScriptOps.GenerateScriptGoStmt(lines);
-                lines = ScriptOps.GenerateScriptInsert(table, lines);
+                lines = ScriptOps.GenerateScriptInsert(server, database, schema, table, lines);
                 lines = ScriptOps.GenerateScriptGoStmt(lines);
                 lines = ScriptOps.GenerateScriptIndexes(server, database, schema, table, lines);
                 lines = ScriptOps.GenerateScriptGoStmt(lines);
-
-                LinkedList<String> outLines = ReplaceObjectNames(chkLst, lines);
+                lines = ReplaceObjectNames(chkDict, lines);
+                lines = ScriptOps.GenerateScriptGoStmt(lines);
+                lines = ScriptOps.SwapObjects(schema,table,chkDict,lines);
+                LinkedList<String> outLines = ScriptOps.GenerateScriptGoStmt(lines);
 
                 return outLines;
             } catch (Exception e) {
@@ -102,29 +106,46 @@ namespace SqlServerScripter {
             System.IO.File.WriteAllLines(outFile, output);
         }
 
-        static LinkedList<String> GetChkList(String tableName, String connStr) {
+        static OrderedDictionary GetTableObjects(String tableName, String connStr) {
             LOGGER.Info("Getting all objects related to the desired table");
             try {
-                LinkedList<String> chkLst = new LinkedList<String>();
-                String qry = "";
-                qry += " SELECT name FROM sys.all_objects WHERE name IN( '{0}' ) ";
-                qry += " UNION ALL ";
-                qry += " SELECT name FROM sys.all_objects WHERE parent_object_id IN(SELECT object_id FROM sys.all_objects WHERE name IN ( '{1}' ) ) ";
-                qry += " UNION ALL ";
-                qry += " SELECT name FROM sys.indexes WHERE object_id IN(SELECT object_id FROM sys.all_objects WHERE name IN ( '{2}' ) ) ";
+                OrderedDictionary chkDict = new OrderedDictionary();
 
-                qry = String.Format(qry, tableName, tableName, tableName);
+                String sql = @" SELECT name, 'INDEX' AS ObjectType FROM sys.indexes 
+                                WHERE object_id IN(SELECT object_id FROM sys.all_objects WHERE name IN ( '{0}' ) ) 
+                                      AND is_unique = 0
+                                UNION ALL  
+                                SELECT name, 'PKUQ' AS ObjectType  FROM sys.all_objects 
+                                WHERE parent_object_id IN(SELECT object_id FROM sys.all_objects WHERE name IN ( '{0}' ) )  
+                                      AND type IN ('PK','UQ')
+                                UNION ALL  
+                                SELECT name, 'CKDF' AS ObjectType FROM sys.all_objects 
+                                WHERE parent_object_id IN (SELECT object_id FROM sys.all_objects WHERE name IN ( '{0}' ) )  
+                                      AND type NOT IN ('PK','UQ')
+                                UNION ALL  
+                                SELECT name, 'TABLE' AS ObjectType FROM sys.all_objects 
+                                WHERE name IN( '{0}' )
+                                ";
+                sql = String.Format(sql, tableName);
+                //String qry = "";
+                //qry += " SELECT name FROM sys.all_objects WHERE name IN( '{0}' ) ";
+                //qry += " UNION ALL ";
+                //qry += " SELECT name FROM sys.all_objects WHERE parent_object_id IN(SELECT object_id FROM sys.all_objects WHERE name IN ( '{1}' ) ) ";
+                //qry += " UNION ALL ";
+                //qry += " SELECT name FROM sys.indexes WHERE object_id IN(SELECT object_id FROM sys.all_objects WHERE name IN ( '{2}' ) ) ";
+                //qry = String.Format(qry, tableName, tableName, tableName);
 
                 DataTable dt = new DataTable();
                 using (SqlConnection cn = new SqlConnection(connStr))
-                using (SqlCommand cmd = new SqlCommand(qry, cn))
+                using (SqlCommand cmd = new SqlCommand(sql, cn))
                 using (SqlDataAdapter da = new SqlDataAdapter(cmd))
                     da.Fill(dt);
 
-                foreach (DataRow r in dt.Rows)
-                    chkLst.AddLast(r["name"].ToString());
+                foreach (DataRow r in dt.Rows) {
+                    chkDict.Add(r["name"].ToString(), r["ObjectType"].ToString());
+                }
 
-                return chkLst;
+                return chkDict;
 
             } catch (Exception e) {
                 LOGGER.Error(e.StackTrace);
@@ -132,15 +153,15 @@ namespace SqlServerScripter {
             return null;
         }
 
-        static LinkedList<String> ReplaceObjectNames(LinkedList<String> chkLst, LinkedList<String> lines) {
-            LOGGER.Info("Replacing object names with the suffix " + SUFFIX_STR);
+        static LinkedList<String> ReplaceObjectNames(OrderedDictionary chkDict, LinkedList<String> lines) {
+            LOGGER.Info("Replacing object names with the suffix " + SUFFIX_STR_NEW);
             try {
                 LinkedList<String> outLines = new LinkedList<String>(lines);
 
-                foreach (String chk in chkLst) {
+                foreach (DictionaryEntry de in chkDict) {
                     foreach (String line in outLines) {
                         if (!line.StartsWith("INSERT INTO")) {
-                            String x = Regex.Replace(line, String.Format(CHECK_STR, chk, chk), chk + SUFFIX_STR);
+                            String x = Regex.Replace(line, String.Format(CHECK_STR, de.Key.ToString(), de.Key.ToString()), de.Key.ToString() + SUFFIX_STR_NEW);
                             if (x != line)
                                 outLines.Find(line).Value = x;
                         }
@@ -151,6 +172,27 @@ namespace SqlServerScripter {
                 LOGGER.Error(e.StackTrace);
             }
             return null;
+        }
+
+
+        static LinkedList<String> SwapOriginalToOld(string table, LinkedList<String> lines) {
+            LOGGER.Info("Generating Script to swap Original with Old");
+            string sql = @"SELECT 'EXEC dbo.sp_rename '''+name+''' , '''+ name+'Old' + ''';' AS Stmt
+                             FROM sys.all_objects WHERE parent_object_id IN(SELECT object_id FROM sys.all_objects WHERE name IN ( '{0}' ) )  
+                             UNION ALL 
+                             SELECT 'EXEC dbo.sp_rename '''+'{0}.'+name+''' , '''+ name+'Old' + '''' + CASE WHEN is_unique=1 THEN ' ;' ELSE ' , ''INDEX'';' END AS Stmt
+                             FROM sys.indexes WHERE object_id IN(SELECT object_id FROM sys.all_objects WHERE name IN ( '{0}' ) ) 
+                             UNION ALL
+                             SELECT 'EXEC dbo.sp_rename '''+name+''' , '''+ name+'Old' + ''';' AS Stmt
+                             FROM sys.all_objects WHERE name IN( '{0}' )";
+            sql = String.Format(sql, table);
+            return lines;
+        }
+
+        static LinkedList<String> SwapNewToOriginal(string table, LinkedList<String> lines) {
+            LOGGER.Info("Generating Script to swap New to Original");
+            string sql = @"";
+            return lines;
         }
 
     }

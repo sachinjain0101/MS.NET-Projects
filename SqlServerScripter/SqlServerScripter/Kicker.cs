@@ -87,7 +87,7 @@ namespace SqlServerScripter {
             }
 
             LOGGER.Info("===> DONE");
-            //Console.ReadLine();
+            Console.ReadLine();
         }
 
         public static LinkedList<String> SmallOp(string connStr, string server, string database, string schema, string table, List<CustomTable> data) {

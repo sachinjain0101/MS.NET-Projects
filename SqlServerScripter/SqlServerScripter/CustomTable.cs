@@ -23,6 +23,6 @@ namespace SqlServerScripter {
     }
 
     public enum TblSize {
-        BIG,SMALL,ERR
+        BIG, SMALL, ERR
     }
 }

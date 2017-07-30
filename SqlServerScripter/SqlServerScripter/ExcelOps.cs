@@ -21,7 +21,7 @@ namespace SqlServerScripter {
             xlApp.AutomationSecurity = Microsoft.Office.Core.MsoAutomationSecurity.msoAutomationSecurityForceDisable;
             xlApp.Application.DisplayAlerts = false;
             Excel.Workbook xlWorkbook = xlApp.Workbooks.Open(Filename: file, ReadOnly: true);
-            Excel.Worksheet xlWorksheet = xlWorkbook.Sheets[1];
+            Excel.Worksheet xlWorksheet = xlWorkbook.Sheets["RealTableList"];
             Excel.Range xlRange = xlWorksheet.UsedRange;
 
             Excel.Range range = xlWorksheet.UsedRange;
@@ -39,7 +39,7 @@ namespace SqlServerScripter {
                 string tableCatalog = (xlRange.Cells[i, 2].Value2 != null) ? xlRange.Cells[i, 2].Value2.ToString() : "";
                 string tableSchema = (xlRange.Cells[i, 3].Value2 != null) ? xlRange.Cells[i, 3].Value2.ToString() : "";
                 string tableName = (xlRange.Cells[i, 4].Value2 != null) ? xlRange.Cells[i, 4].Value2.ToString() : "";
-                string key = size.ToString()+HYPHEN+tableCatalog + DOT + tableSchema + DOT + tableName;
+                string key = size.ToString() + HYPHEN + tableCatalog + DOT + tableSchema + DOT + tableName;
 
                 if (key != prevKey) {
                     if (ct != null) {

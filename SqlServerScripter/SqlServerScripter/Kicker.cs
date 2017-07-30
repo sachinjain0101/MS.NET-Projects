@@ -8,6 +8,7 @@ using System.Collections.Specialized;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
+using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -17,8 +18,11 @@ namespace SqlServerScripter {
         private static ILog LOGGER = LogManager.GetLogger(typeof(Kicker));
         public const string SUFFIX_STR_NEW = "_NEW";
         public const string SUFFIX_STR_OLD = "_OLD";
+        public const string TIME_FORMAT = "yyyyMMddHHmmss";
 
         private static String CHECK_STR = "\\b\\[{0}\\]\\b|\\b{1}\\b";
+        private static String SMALL_TABLE = "small_tables_{0}.sql";
+        private static String BIG_TABLE = "big_tables_{0}.sql";
 
         static void Main(string[] args) {
             XmlConfigurator.Configure();
@@ -30,6 +34,9 @@ namespace SqlServerScripter {
 
             LOGGER.Info("Server: " + server);
             LOGGER.Info("Table List: " + tblLstXls);
+
+            string smallTablesFile = String.Format(SMALL_TABLE, DateTime.Now.ToString(TIME_FORMAT));
+            string bigTablesFile = String.Format(BIG_TABLE, DateTime.Now.ToString(TIME_FORMAT));
 
             foreach (KeyValuePair<string, List<CustomTable>> kv in data) {
 
@@ -51,21 +58,31 @@ namespace SqlServerScripter {
                 LOGGER.Info("Table Name: " + table);
 
                 LinkedList<String> outLines = new LinkedList<string>();
+
                 switch (size) {
                     case TblSize.BIG:
                         outLines = BigOp(connStr, server, database, schema, table, kv.Value);
+                        if (outLines.Count > 0) {
+                            LOGGER.Info("Writing file: " + bigTablesFile);
+                            File.AppendAllLines(bigTablesFile, outLines);
+                        }
+                        if (outLines.Count > 0) {
+                            String outFile = server + "_" + database + "_" + schema + "_" + table + "_" + DateTime.Now.ToString(TIME_FORMAT) + ".sql";
+                            LOGGER.Info("Writing file: " + outFile);
+                            File.WriteAllLines(outFile, outLines);
+                        }
                         break;
                     case TblSize.SMALL:
+                        outLines = SmallOp(connStr, server, database, schema, table, kv.Value);
+                        if (outLines.Count > 0) {
+                            LOGGER.Info("Writing file: " + smallTablesFile);
+                            File.AppendAllLines(smallTablesFile, outLines);
+                        }
                         break;
                     case TblSize.ERR:
                         break;
                 }
 
-                if (outLines.Count > 0) {
-                    string format = "yyyyMMddHHmmss";
-                    String outFile = server + "_" + database + "_" +schema+"_"+ table + "_" + DateTime.Now.ToString(format) + ".sql";
-                    WriteFile(outFile, outLines);
-                }
                 LOGGER.Info("======");
             }
 
@@ -73,6 +90,31 @@ namespace SqlServerScripter {
             //Console.ReadLine();
         }
 
+        public static LinkedList<String> SmallOp(string connStr, string server, string database, string schema, string table, List<CustomTable> data) {
+            try {
+                LinkedList<String> lines = new LinkedList<String>();
+
+                lines = ScriptOps.GenerateScriptUseStmt(database, lines);
+                lines = ScriptOps.GenerateScriptGoStmt(lines);
+                lines = ScriptOps.GenerateScriptDropIndexes(server, database, schema, table, lines);
+                lines = ScriptOps.GenerateScriptGoStmt(lines);
+                lines = ScriptOps.GenerateScriptDropConstraints(server, database, schema, table, lines);
+                lines = ScriptOps.GenerateScriptGoStmt(lines);
+                lines = ScriptOps.GenerateScriptDropStatistics(server, database, schema, table, lines);
+                lines = ScriptOps.GenerateScriptGoStmt(lines);
+                lines = ScriptOps.GenerateScriptAlterTable(server, database, schema, table, lines, data);
+                lines = ScriptOps.GenerateScriptGoStmt(lines);
+                lines = ScriptOps.GenerateScriptConstraints(server, database, schema, table, lines);
+                lines = ScriptOps.GenerateScriptGoStmt(lines);
+                lines = ScriptOps.GenerateScriptIndexes(server, database, schema, table, lines);
+                lines = ScriptOps.GenerateScriptGoStmt(lines);
+
+                return lines;
+            } catch (Exception e) {
+                LOGGER.Error(e.StackTrace);
+            }
+            return null;
+        }
 
         public static LinkedList<String> BigOp(string connStr, string server, string database, string schema, string table, List<CustomTable> data) {
             try {
@@ -92,10 +134,10 @@ namespace SqlServerScripter {
                 lines = ReplaceObjectNames(chkDict, lines);
                 lines = ReplaceDataTypes(chkDict, data, lines);
                 lines = ScriptOps.GenerateScriptGoStmt(lines);
-                lines = ScriptOps.SwapObjects(schema,table,chkDict,lines);
-                LinkedList<String> outLines = ScriptOps.GenerateScriptGoStmt(lines);
+                lines = ScriptOps.SwapObjects(schema, table, chkDict, lines);
+                lines = ScriptOps.GenerateScriptGoStmt(lines);
 
-                return outLines;
+                return lines;
             } catch (Exception e) {
                 LOGGER.Error(e.StackTrace);
             }
@@ -156,8 +198,8 @@ namespace SqlServerScripter {
 
         static LinkedList<String> ReplaceDataTypes(OrderedDictionary chkDict, List<CustomTable> data, LinkedList<String> lines) {
 
-            foreach(string line in lines) {
-                if(line.StartsWith("CREATE TABLE")) {
+            foreach (string line in lines) {
+                if (line.StartsWith("CREATE TABLE")) {
                     string val = line;
                     foreach (CustomTable ct in data) {
                         string str = "[" + ct.ColumnName + "] [" + ct.OldDataType + "]";

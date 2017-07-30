@@ -26,7 +26,7 @@ namespace SqlServerScripter {
                 string fromObj = obj;
                 string toObj = obj + Kicker.SUFFIX_STR_OLD;
 
-                string ownerObj = schemaName+DOT+tableName+DOT;
+                string ownerObj = schemaName + DOT + tableName + DOT;
 
                 if (de.Value.ToString() == "INDEX")
                     line = String.Format(sql, ownerObj, fromObj, toObj, ", N'INDEX'");
@@ -64,7 +64,7 @@ namespace SqlServerScripter {
         public static LinkedList<String> GenerateScriptUseStmt(string database, LinkedList<String> lines) {
             LOGGER.Info("Generating Use Statement");
             string use = "USE [{0}] ;";
-            lines.AddLast(String.Format(use,database));
+            lines.AddLast(String.Format(use, database));
             lines.AddLast("");
             return lines;
         }
@@ -96,12 +96,44 @@ namespace SqlServerScripter {
             }
 
             string insertStmt = "INSERT INTO {0} ({1}) SELECT {1} FROM {2} ;";
+            string printStartStmt = "PRINT N'START - Inserting into {0}.{1}.{2}'";
+            string printFinishStmt = "PRINT N'FINISH Inserting into {0}.{1}.{2}'";
             string newTable = table + Kicker.SUFFIX_STR_NEW;
             string oldTable = table;
             lines.AddLast("SET QUOTED_IDENTIFIER ON;");
-            lines.AddLast("SET IDENTITY_INSERT "+ newTable + " ON;");
+            lines.AddLast("SET IDENTITY_INSERT " + newTable + " ON;");
             lines.AddLast("SET NOCOUNT ON;");
+            lines.AddLast(String.Format(printStartStmt, database,schema, table) + SEMI_COLON);
             lines.AddLast(String.Format(insertStmt, newTable, colString, oldTable));
+            lines.AddLast(String.Format(printFinishStmt, database, schema, table) + SEMI_COLON);
+            return lines;
+        }
+
+        public static LinkedList<string> GenerateScriptAlterTable(string server, string database, string schema, string table, LinkedList<string> lines, List<CustomTable> data) {
+
+            LOGGER.Info("Generating Alter Column Scripts");
+            Server srv = new Server(server);
+            Database db = srv.Databases[database];
+            db.DefaultSchema = schema;
+            StringBuilder sb = new StringBuilder();
+            Table tbl = db.Tables[table];
+
+            string alterStmt = "ALTER TABLE {0}.{1} ALTER COLUMN {2} {3} {4}";
+            string printStmt = "PRINT N'Altering {0}.{1}.{2}.{3}'";
+            foreach (CustomTable ct in data) {
+                foreach(Column col in tbl.Columns) {
+                    if (col.Name.ToLower() == ct.ColumnName.ToLower()) {
+                        string x = "";
+                        if (!col.Nullable)
+                            x = "NOT NULL";
+                        else
+                            x = "NULL";
+                        lines.AddLast(String.Format(printStmt, database, schema, table, ct.ColumnName) + SEMI_COLON);
+                        lines.AddLast(String.Format(alterStmt, schema, table, ct.ColumnName, ct.NewDataType, x)+SEMI_COLON);
+                    }
+                }
+            }
+
             return lines;
         }
 
@@ -192,7 +224,7 @@ namespace SqlServerScripter {
 
                     StringCollection coll = tbl.Script(options);
                     foreach (string str in coll) {
-                        lines.AddLast(str+SEMI_COLON);
+                        lines.AddLast(str + SEMI_COLON);
                     }
                 }
                 return lines;
@@ -202,5 +234,71 @@ namespace SqlServerScripter {
             return null;
         }
 
+        public static LinkedList<String> GenerateScriptDropConstraints(String server, String database, string schema, String table, LinkedList<String> lines) {
+            LOGGER.Info("Generating Drop Constraints Script");
+            Server srv = new Server(server);
+            Database db = srv.Databases[database];
+            db.DefaultSchema = schema;
+            StringBuilder sb = new StringBuilder();
+            Table tbl = db.Tables[table];
+
+            foreach (Check chk in tbl.Checks) {
+                ScriptingOptions options = new ScriptingOptions();
+                options.ScriptDrops = true;
+                options.NoCommandTerminator = false;
+                foreach (string line in chk.Script(options))
+                    lines.AddLast(line + SEMI_COLON);
+            }
+
+            foreach (Column col in tbl.Columns) {
+                if (col.DefaultConstraint != null) {
+                    ScriptingOptions options = new ScriptingOptions();
+                    options.ScriptDrops = true;
+                    options.NoCommandTerminator = false;
+                    foreach (string line in col.DefaultConstraint.Script(options))
+                        lines.AddLast(line + SEMI_COLON);
+                }
+            }
+
+            return lines;
+        }
+
+        public static LinkedList<String> GenerateScriptDropIndexes(String server, String database, string schema, String table, LinkedList<String> lines) {
+            LOGGER.Info("Generating Drop Indexes Script");
+            Server srv = new Server(server);
+            Database db = srv.Databases[database];
+            db.DefaultSchema = schema;
+            StringBuilder sb = new StringBuilder();
+            Table tbl = db.Tables[table];
+
+            foreach (Index idx in tbl.Indexes) {
+                ScriptingOptions options = new ScriptingOptions();
+                options.ScriptDrops = true;
+                options.NoCommandTerminator = false;
+                foreach (string line in idx.Script(options))
+                    lines.AddLast(line + SEMI_COLON);
+            }
+
+            return lines;
+        }
+
+        public static LinkedList<String> GenerateScriptDropStatistics(String server, String database, string schema, String table, LinkedList<String> lines) {
+            LOGGER.Info("Generating Drop Statistics Script");
+            Server srv = new Server(server);
+            Database db = srv.Databases[database];
+            db.DefaultSchema = schema;
+            StringBuilder sb = new StringBuilder();
+            Table tbl = db.Tables[table];
+
+            foreach (Statistic stats in tbl.Statistics) {
+                ScriptingOptions options = new ScriptingOptions();
+                options.ScriptDrops = true;
+                options.NoCommandTerminator = false;
+                foreach (string line in stats.Script(options))
+                    lines.AddLast(line + SEMI_COLON);
+            }
+
+            return lines;
+        }
     }
 }

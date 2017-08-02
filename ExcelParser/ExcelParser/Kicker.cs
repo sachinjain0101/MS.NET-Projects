@@ -19,7 +19,7 @@ namespace ExcelParser {
         const string DB_STR = "Database";
         const string SP_STR = "StoredProc";
         const string DATE_FORMAT = "yyyyMMddHHmmss";
-        const string SP_COLS = "{0}_{1}_{2}.csv";
+        const string SP_COLS = "output_{0}.csv";
         const string DUMMY = "dummy_{0}.csv";
         const string COL_SEP = ",";
         const string SPACE = " ";
@@ -63,13 +63,14 @@ namespace ExcelParser {
 
             Kicker k = new Kicker();
             string inputDir = ConfigurationManager.AppSettings["INPUT_DIR"].ToString();
-            inputDir = @"C:\Users\sachin.jain\Google Drive\#PeopleNet-Work\Reporting Project\Report Templates_";
+            //inputDir = @"C:\Users\sachin.jain\Google Drive\#PeopleNet-Work\Reporting Project\Report Templates_";
 
+            LinkedList<String> outLines = new LinkedList<string>();
             foreach (string file in Directory.EnumerateFiles(inputDir)) {
-                Console.WriteLine("================");
                 Console.WriteLine("================");
                 Console.WriteLine("Processing: " + file);
                 ReportMetaData rmd = k.ProcessFileName(file);
+
 
                 if (rmd.XlsFileName.ToUpper().Contains(".XLS")) {
                     XlData xld = k.getExcelData(file);
@@ -79,20 +80,27 @@ namespace ExcelParser {
                         rmd.SpName = xld.SpName;
 
                         foreach (string data in xld.Lines) {
+                            outLines.AddLast(rmd.ToString() + COMMA + data);
                             Console.WriteLine(rmd.ToString() + COMMA + data);
                         }
 
                         //string outFile = string.Format(SP_COLS, xld.DbName, xld.SpName, DateTime.Now.ToString(DATE_FORMAT));
                         //File.WriteAllLines(outFile, xld.Lines);
                     } else {
+                        outLines.AddLast(rmd.ToString() + COMMA + "???");
                         Console.WriteLine(rmd.ToString() + COMMA + "???");
                         //string outFile = string.Format(DUMMY, DateTime.Now.ToString(DATE_FORMAT));
                         //File.WriteAllLines(outFile, new List<string>() { "dummy" });
                     }
                 } else {
+                    outLines.AddLast(rmd.ToString() + COMMA + "???");
                     Console.WriteLine(rmd.ToString() + COMMA + "???");
                 }
             }
+
+            string outFile = string.Format(SP_COLS, DateTime.Now.ToString(DATE_FORMAT));
+            File.WriteAllLines(outFile, outLines);
+
             Console.ReadLine();
         }
 

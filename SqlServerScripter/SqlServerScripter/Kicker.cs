@@ -20,7 +20,9 @@ namespace SqlServerScripter {
         public const string SUFFIX_STR_OLD = "_OLD";
         public const string TIME_FORMAT = "yyyyMMddHHmmss";
 
-        private static String CHECK_STR = "\\b\\[{0}\\]\\b|\\b{1}\\b";
+        private static String CHECK_STR = @"\b\[{0}\]\b|\b{1}\b";
+        const string INSERT_PAT = @"insert[\s]+into\b";
+        
         private static String SMALL_TABLE = "small_tables_{0}.sql";
         private static String BIG_TABLE = "big_tables_{0}.sql";
 
@@ -62,10 +64,10 @@ namespace SqlServerScripter {
                 switch (size) {
                     case TblSize.BIG:
                         outLines = BigOp(connStr, server, database, schema, table, kv.Value);
-                        if (outLines.Count > 0) {
-                            LOGGER.Info("Writing file: " + bigTablesFile);
-                            File.AppendAllLines(bigTablesFile, outLines);
-                        }
+                        //if (outLines.Count > 0) {
+                        //    LOGGER.Info("Writing file: " + bigTablesFile);
+                        //    File.AppendAllLines(bigTablesFile, outLines);
+                        //}
                         if (outLines.Count > 0) {
                             String outFile = server + "_" + database + "_" + schema + "_" + table + "_" + DateTime.Now.ToString(TIME_FORMAT) + ".sql";
                             LOGGER.Info("Writing file: " + outFile);
@@ -87,7 +89,7 @@ namespace SqlServerScripter {
             }
 
             LOGGER.Info("===> DONE");
-            Console.ReadLine();
+            //Console.ReadLine();
         }
 
         public static LinkedList<String> SmallOp(string connStr, string server, string database, string schema, string table, List<CustomTable> data) {
@@ -96,17 +98,22 @@ namespace SqlServerScripter {
 
                 lines = ScriptOps.GenerateScriptUseStmt(database, lines);
                 lines = ScriptOps.GenerateScriptGoStmt(lines);
-                lines = ScriptOps.GenerateScriptDropIndexes(server, database, schema, table, lines);
+                lines = ScriptOps.GenerateScript(server, database, schema, table, lines, ObjType.INDEX, OpType.DROP);
+                //lines = ScriptOps.GenerateScriptDropIndexes(server, database, schema, table, lines);
                 lines = ScriptOps.GenerateScriptGoStmt(lines);
-                lines = ScriptOps.GenerateScriptDropConstraints(server, database, schema, table, lines);
+                lines = ScriptOps.GenerateScript(server, database, schema, table, lines, ObjType.CKDF, OpType.DROP);
+                //lines = ScriptOps.GenerateScriptDropConstraints(server, database, schema, table, lines);
                 lines = ScriptOps.GenerateScriptGoStmt(lines);
-                lines = ScriptOps.GenerateScriptDropStatistics(server, database, schema, table, lines);
+                lines = ScriptOps.GenerateScript(server, database, schema, table, lines, ObjType.STAT, OpType.DROP);
+                //lines = ScriptOps.GenerateScriptDropStatistics(server, database, schema, table, lines);
                 lines = ScriptOps.GenerateScriptGoStmt(lines);
                 lines = ScriptOps.GenerateScriptAlterTable(server, database, schema, table, lines, data);
                 lines = ScriptOps.GenerateScriptGoStmt(lines);
-                lines = ScriptOps.GenerateScriptConstraints(server, database, schema, table, lines);
+                lines = ScriptOps.GenerateScript(server, database, schema, table, lines, ObjType.CKDF, OpType.CREATE);
+                //lines = ScriptOps.GenerateScriptConstraints(server, database, schema, table, lines);
                 lines = ScriptOps.GenerateScriptGoStmt(lines);
-                lines = ScriptOps.GenerateScriptIndexes(server, database, schema, table, lines);
+                lines = ScriptOps.GenerateScript(server, database, schema, table, lines, ObjType.INDEX, OpType.CREATE);
+                //lines = ScriptOps.GenerateScriptIndexes(server, database, schema, table, lines);
                 lines = ScriptOps.GenerateScriptGoStmt(lines);
 
                 return lines;
@@ -125,16 +132,22 @@ namespace SqlServerScripter {
                 lines = ScriptOps.GenerateScriptGoStmt(lines);
                 lines = ScriptOps.GenerateScriptTable(server, database, schema, table, lines);
                 lines = ScriptOps.GenerateScriptGoStmt(lines);
-                lines = ScriptOps.GenerateScriptConstraints(server, database, schema, table, lines);
+                lines = ScriptOps.GenerateScript(server, database, schema, table, lines, ObjType.CKDF, OpType.CREATE);
+                //lines = ScriptOps.GenerateScriptConstraints(server, database, schema, table, lines);
                 lines = ScriptOps.GenerateScriptGoStmt(lines);
                 lines = ScriptOps.GenerateScriptInsert(server, database, schema, table, lines);
                 lines = ScriptOps.GenerateScriptGoStmt(lines);
-                lines = ScriptOps.GenerateScriptIndexes(server, database, schema, table, lines);
+                lines = ScriptOps.GenerateScript(server, database, schema, table, lines, ObjType.INDEX, OpType.CREATE);
+                //lines = ScriptOps.GenerateScriptIndexes(server, database, schema, table, lines);
                 lines = ScriptOps.GenerateScriptGoStmt(lines);
                 lines = ReplaceObjectNames(chkDict, lines);
                 lines = ReplaceDataTypes(chkDict, data, lines);
                 lines = ScriptOps.GenerateScriptGoStmt(lines);
                 lines = ScriptOps.SwapObjects(schema, table, chkDict, lines);
+                lines = ScriptOps.GenerateScriptGoStmt(lines);
+                lines = ScriptOps.GenerateScript(server, database, schema, table, lines, ObjType.TRG, OpType.DROP);
+                lines = ScriptOps.GenerateScriptGoStmt(lines);
+                lines = ScriptOps.GenerateScript(server, database, schema, table, lines, ObjType.TRG, OpType.CREATE);
                 lines = ScriptOps.GenerateScriptGoStmt(lines);
 
                 return lines;
@@ -154,23 +167,31 @@ namespace SqlServerScripter {
             try {
                 OrderedDictionary chkDict = new OrderedDictionary();
 
-                String sql = @" SELECT name, 'INDEX' AS ObjectType FROM sys.indexes 
+                String sql = @" SELECT name, '" + ObjType.INDEX.ToString() + @"' AS ObjectType FROM sys.indexes 
                                 WHERE object_id IN(SELECT object_id FROM sys.all_objects WHERE name IN ( '{0}' ) ) 
-                                      AND is_unique = 0
+                                      AND is_unique = 0 AND type in (1,2)
                                 UNION ALL  
-                                SELECT name, 'PKUQ' AS ObjectType  FROM sys.all_objects 
+                                SELECT name, '" + ObjType.PKUQ.ToString() + @"' AS ObjectType  FROM sys.all_objects 
                                 WHERE parent_object_id IN(SELECT object_id FROM sys.all_objects WHERE name IN ( '{0}' ) )  
                                       AND type IN ('PK','UQ')
+                                UNION ALL
+                                SELECT name, '" + ObjType.TRG.ToString() + @"' AS ObjectType FROM sys.all_objects
+                                WHERE parent_object_id IN(SELECT object_id FROM sys.all_objects WHERE name IN ( '{0}' ) )  
+                                      AND type IN('TR')
                                 UNION ALL  
-                                SELECT name, 'CKDF' AS ObjectType FROM sys.all_objects 
+                                SELECT name, '" + ObjType.CKDF.ToString() + @"' AS ObjectType FROM sys.all_objects 
                                 WHERE parent_object_id IN (SELECT object_id FROM sys.all_objects WHERE name IN ( '{0}' ) )  
-                                      AND type NOT IN ('PK','UQ')
+                                      AND type IN ('C','D')
                                 UNION ALL  
-                                SELECT name, 'TABLE' AS ObjectType FROM sys.all_objects 
+                                SELECT name, '" + ObjType.TABLE.ToString() + @"' AS ObjectType FROM sys.all_objects 
                                 WHERE name IN( '{0}' )
                                 ";
                 sql = String.Format(sql, tableName);
                 //String qry = "";
+                //UNION ALL
+                //SELECT name, '" + ObjType.TRG.ToString() + @"' AS ObjectType FROM sys.all_objects
+                //WHERE parent_object_id IN(SELECT object_id FROM sys.all_objects WHERE name IN ( '{0}' ) )  
+                //        AND type IN('TR')
                 //qry += " SELECT name FROM sys.all_objects WHERE name IN( '{0}' ) ";
                 //qry += " UNION ALL ";
                 //qry += " SELECT name FROM sys.all_objects WHERE parent_object_id IN(SELECT object_id FROM sys.all_objects WHERE name IN ( '{1}' ) ) ";
@@ -185,7 +206,9 @@ namespace SqlServerScripter {
                     da.Fill(dt);
 
                 foreach (DataRow r in dt.Rows) {
-                    chkDict.Add(r["name"].ToString(), r["ObjectType"].ToString());
+                    if (!String.IsNullOrEmpty(r["name"].ToString())) {
+                        chkDict.Add(r["name"].ToString(), r["ObjectType"].ToString());
+                    }
                 }
 
                 return chkDict;
@@ -197,14 +220,17 @@ namespace SqlServerScripter {
         }
 
         static LinkedList<String> ReplaceDataTypes(OrderedDictionary chkDict, List<CustomTable> data, LinkedList<String> lines) {
-
+            LOGGER.Info("Replacing data types");
+            string pattern = @"{0}\b[\s]+{1}\b|\[{0}\b\][\s]+\[{1}\b\]";
             foreach (string line in lines) {
                 if (line.StartsWith("CREATE TABLE")) {
                     string val = line;
                     foreach (CustomTable ct in data) {
-                        string str = "[" + ct.ColumnName + "] [" + ct.OldDataType + "]";
+                        //string str = "[" + ct.ColumnName + "] [" + ct.OldDataType + "]";
+                        string strPat = String.Format(pattern, ct.ColumnName, ct.OldDataType);
                         string strRpl = "[" + ct.ColumnName + "] [" + ct.NewDataType + "]";
-                        val = val.Replace(str, strRpl);
+                        //val = val.Replace(str, strRpl);
+                        val = Regex.Replace(val, strPat, strRpl, RegexOptions.IgnoreCase);
                     }
                     lines.Find(line).Value = val;
                 }
@@ -220,11 +246,14 @@ namespace SqlServerScripter {
                 LinkedList<String> outLines = new LinkedList<String>(lines);
 
                 foreach (DictionaryEntry de in chkDict) {
-                    foreach (String line in outLines) {
-                        if (!line.StartsWith("INSERT INTO")) {
-                            String x = Regex.Replace(line, String.Format(CHECK_STR, de.Key.ToString(), de.Key.ToString()), de.Key.ToString() + SUFFIX_STR_NEW);
-                            if (x != line)
-                                outLines.Find(line).Value = x;
+                    if (!String.IsNullOrEmpty(de.Key.ToString())) {
+                        foreach (String line in outLines) {
+                            if (!Regex.IsMatch(line, INSERT_PAT, RegexOptions.IgnoreCase)) {
+                                //if (!line.StartsWith("INSERT INTO")) {
+                                String x = Regex.Replace(line, String.Format(CHECK_STR, de.Key.ToString(), de.Key.ToString()), de.Key.ToString() + SUFFIX_STR_NEW);
+                                if (x != line)
+                                    outLines.Find(line).Value = x;
+                            }
                         }
                     }
                 }
@@ -233,27 +262,6 @@ namespace SqlServerScripter {
                 LOGGER.Error(e.StackTrace);
             }
             return null;
-        }
-
-
-        static LinkedList<String> SwapOriginalToOld(string table, LinkedList<String> lines) {
-            LOGGER.Info("Generating Script to swap Original with Old");
-            string sql = @"SELECT 'EXEC dbo.sp_rename '''+name+''' , '''+ name+'Old' + ''';' AS Stmt
-                             FROM sys.all_objects WHERE parent_object_id IN(SELECT object_id FROM sys.all_objects WHERE name IN ( '{0}' ) )  
-                             UNION ALL 
-                             SELECT 'EXEC dbo.sp_rename '''+'{0}.'+name+''' , '''+ name+'Old' + '''' + CASE WHEN is_unique=1 THEN ' ;' ELSE ' , ''INDEX'';' END AS Stmt
-                             FROM sys.indexes WHERE object_id IN(SELECT object_id FROM sys.all_objects WHERE name IN ( '{0}' ) ) 
-                             UNION ALL
-                             SELECT 'EXEC dbo.sp_rename '''+name+''' , '''+ name+'Old' + ''';' AS Stmt
-                             FROM sys.all_objects WHERE name IN( '{0}' )";
-            sql = String.Format(sql, table);
-            return lines;
-        }
-
-        static LinkedList<String> SwapNewToOriginal(string table, LinkedList<String> lines) {
-            LOGGER.Info("Generating Script to swap New to Original");
-            string sql = @"";
-            return lines;
         }
 
     }

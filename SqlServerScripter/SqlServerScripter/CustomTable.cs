@@ -25,4 +25,12 @@ namespace SqlServerScripter {
     public enum TblSize {
         BIG, SMALL, ERR
     }
+
+    public enum ObjType {
+        TABLE, INDEX, PKUQ, CKDF, TRG, STAT
+    }
+
+    public enum OpType {
+        CREATE, DROP
+    }
 }

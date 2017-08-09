@@ -55,8 +55,11 @@
     <Compile Include="CustomTable.cs" />
     <Compile Include="ExcelOps.cs" />
     <Compile Include="Kicker.cs" />
+    <Compile Include="ObjType.cs" />
+    <Compile Include="OpType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ScriptOps.cs" />
+    <Compile Include="TblSize.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">

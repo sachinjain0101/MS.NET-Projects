@@ -23,8 +23,9 @@ namespace SqlServerScripter {
         private static String CHECK_STR = @"\b\[{0}\]\b|\b{1}\b";
         const string INSERT_PAT = @"insert[\s]+into\b";
         
-        private static String SMALL_TABLE = "small_tables_{0}.sql";
-        private static String BIG_TABLE = "big_tables_{0}.sql";
+        private static String SMALL_FL_TMPL = "{0}_small_tables_{1}.sql";
+        private static String BIG_FL_TMPL = "{0}_{1}_{2}_{3}_{4}.sql";
+        private static string STAR_STR = "PRINT '****************************************************************************************';" + Environment.NewLine;
 
         static void Main(string[] args) {
             XmlConfigurator.Configure();
@@ -37,9 +38,8 @@ namespace SqlServerScripter {
             LOGGER.Info("Server: " + server);
             LOGGER.Info("Table List: " + tblLstXls);
 
-            string smallTablesFile = String.Format(SMALL_TABLE, DateTime.Now.ToString(TIME_FORMAT));
-            string bigTablesFile = String.Format(BIG_TABLE, DateTime.Now.ToString(TIME_FORMAT));
-
+            string outFileSmall = String.Format(SMALL_FL_TMPL, server,DateTime.Now.ToString(TIME_FORMAT));
+            bool smallOp = true;
             foreach (KeyValuePair<string, List<CustomTable>> kv in data) {
 
                 string k = kv.Key.ToString();
@@ -63,58 +63,75 @@ namespace SqlServerScripter {
 
                 switch (size) {
                     case TblSize.BIG:
+                        smallOp = false;
                         outLines = BigOp(connStr, server, database, schema, table, kv.Value);
-                        //if (outLines.Count > 0) {
-                        //    LOGGER.Info("Writing file: " + bigTablesFile);
-                        //    File.AppendAllLines(bigTablesFile, outLines);
-                        //}
                         if (outLines.Count > 0) {
-                            String outFile = server + "_" + database + "_" + schema + "_" + table + "_" + DateTime.Now.ToString(TIME_FORMAT) + ".sql";
-                            LOGGER.Info("Writing file: " + outFile);
-                            File.WriteAllLines(outFile, outLines);
+                            String outFileBig = String.Format(BIG_FL_TMPL,server,database,schema,table,DateTime.Now.ToString(TIME_FORMAT));
+                            LOGGER.Info("Writing file: " + outFileBig);
+                            File.WriteAllLines(outFileBig, outLines);
+                            MoveToOutputDir(server, outFileBig);
                         }
                         break;
                     case TblSize.SMALL:
                         outLines = SmallOp(connStr, server, database, schema, table, kv.Value);
                         if (outLines.Count > 0) {
-                            LOGGER.Info("Writing file: " + smallTablesFile);
-                            File.AppendAllLines(smallTablesFile, outLines);
+                            LOGGER.Info("Writing file: " + outFileSmall);
+                            File.AppendAllLines(outFileSmall, outLines);
                         }
                         break;
                     case TblSize.ERR:
                         break;
                 }
 
+                if(!smallOp)
+                    MoveToOutputDir(server, outFileSmall);
+
                 LOGGER.Info("======");
             }
+
+            MoveToOutputDir(server, outFileSmall);
+
 
             LOGGER.Info("===> DONE");
             //Console.ReadLine();
         }
 
+        public static void MoveToOutputDir(string server, string file) {
+
+            if(!Directory.Exists(server))
+                Directory.CreateDirectory(server);
+
+            string destFile = Path.Combine(server, file);
+            if(File.Exists(file))
+                File.Move(file, destFile); 
+
+        }
+
         public static LinkedList<String> SmallOp(string connStr, string server, string database, string schema, string table, List<CustomTable> data) {
             try {
                 LinkedList<String> lines = new LinkedList<String>();
+                HashSet<string> relevantObjs = ScriptOps.GetRelevantObjects(server, database, schema, table, data);
 
+                lines.AddLast(STAR_STR);
                 lines = ScriptOps.GenerateScriptUseStmt(database, lines);
                 lines = ScriptOps.GenerateScriptGoStmt(lines);
-                lines = ScriptOps.GenerateScript(server, database, schema, table, lines, ObjType.INDEX, OpType.DROP);
-                //lines = ScriptOps.GenerateScriptDropIndexes(server, database, schema, table, lines);
-                lines = ScriptOps.GenerateScriptGoStmt(lines);
-                lines = ScriptOps.GenerateScript(server, database, schema, table, lines, ObjType.CKDF, OpType.DROP);
-                //lines = ScriptOps.GenerateScriptDropConstraints(server, database, schema, table, lines);
-                lines = ScriptOps.GenerateScriptGoStmt(lines);
-                lines = ScriptOps.GenerateScript(server, database, schema, table, lines, ObjType.STAT, OpType.DROP);
-                //lines = ScriptOps.GenerateScriptDropStatistics(server, database, schema, table, lines);
-                lines = ScriptOps.GenerateScriptGoStmt(lines);
+                lines = ScriptOps.GenerateScript(server, database, schema, table, lines, ObjType.INDEX_NON_CLUST, OpType.DROP, TblSize.SMALL, relevantObjs);
+                //lines = ScriptOps.GenerateScriptGoStmt(lines);
+                lines = ScriptOps.GenerateScript(server, database, schema, table, lines, ObjType.INDEX_CLUST, OpType.DROP, TblSize.SMALL, relevantObjs);
+                //lines = ScriptOps.GenerateScriptGoStmt(lines);
+                lines = ScriptOps.GenerateScript(server, database, schema, table, lines, ObjType.CKDF, OpType.DROP, TblSize.SMALL, relevantObjs);
+                //lines = ScriptOps.GenerateScriptGoStmt(lines);
+                lines = ScriptOps.GenerateScript(server, database, schema, table, lines, ObjType.STAT, OpType.DROP, TblSize.SMALL, relevantObjs);
+                //lines = ScriptOps.GenerateScriptGoStmt(lines);
                 lines = ScriptOps.GenerateScriptAlterTable(server, database, schema, table, lines, data);
                 lines = ScriptOps.GenerateScriptGoStmt(lines);
-                lines = ScriptOps.GenerateScript(server, database, schema, table, lines, ObjType.CKDF, OpType.CREATE);
-                //lines = ScriptOps.GenerateScriptConstraints(server, database, schema, table, lines);
-                lines = ScriptOps.GenerateScriptGoStmt(lines);
-                lines = ScriptOps.GenerateScript(server, database, schema, table, lines, ObjType.INDEX, OpType.CREATE);
-                //lines = ScriptOps.GenerateScriptIndexes(server, database, schema, table, lines);
-                lines = ScriptOps.GenerateScriptGoStmt(lines);
+                lines = ScriptOps.GenerateScript(server, database, schema, table, lines, ObjType.CKDF, OpType.CREATE, TblSize.SMALL, relevantObjs);
+                //lines = ScriptOps.GenerateScriptGoStmt(lines);
+                lines = ScriptOps.GenerateScript(server, database, schema, table, lines, ObjType.INDEX_CLUST, OpType.CREATE, TblSize.SMALL, relevantObjs);
+                //lines = ScriptOps.GenerateScriptGoStmt(lines);
+                lines = ScriptOps.GenerateScript(server, database, schema, table, lines, ObjType.INDEX_NON_CLUST, OpType.CREATE, TblSize.SMALL, relevantObjs);
+                //lines = ScriptOps.GenerateScriptGoStmt(lines);
+                lines.AddLast(STAR_STR);
 
                 return lines;
             } catch (Exception e) {
@@ -132,22 +149,25 @@ namespace SqlServerScripter {
                 lines = ScriptOps.GenerateScriptGoStmt(lines);
                 lines = ScriptOps.GenerateScriptTable(server, database, schema, table, lines);
                 lines = ScriptOps.GenerateScriptGoStmt(lines);
-                lines = ScriptOps.GenerateScript(server, database, schema, table, lines, ObjType.CKDF, OpType.CREATE);
-                //lines = ScriptOps.GenerateScriptConstraints(server, database, schema, table, lines);
-                lines = ScriptOps.GenerateScriptGoStmt(lines);
+                lines = ScriptOps.GenerateScript(server, database, schema, table, lines, ObjType.CKDF, OpType.CREATE, TblSize.BIG, null);
+                //lines = ScriptOps.GenerateScriptGoStmt(lines);
+                //INSERT
                 lines = ScriptOps.GenerateScriptInsert(server, database, schema, table, lines);
                 lines = ScriptOps.GenerateScriptGoStmt(lines);
-                lines = ScriptOps.GenerateScript(server, database, schema, table, lines, ObjType.INDEX, OpType.CREATE);
-                //lines = ScriptOps.GenerateScriptIndexes(server, database, schema, table, lines);
-                lines = ScriptOps.GenerateScriptGoStmt(lines);
+                //INDEX CLUSTERED
+                lines = ScriptOps.GenerateScript(server, database, schema, table, lines, ObjType.INDEX_CLUST, OpType.CREATE, TblSize.BIG, null);
+                //lines = ScriptOps.GenerateScriptGoStmt(lines);
+                //INDEX NON CLUSTERED
+                lines = ScriptOps.GenerateScript(server, database, schema, table, lines, ObjType.INDEX_NON_CLUST, OpType.CREATE, TblSize.BIG, null);
+                //lines = ScriptOps.GenerateScriptGoStmt(lines);
                 lines = ReplaceObjectNames(chkDict, lines);
                 lines = ReplaceDataTypes(chkDict, data, lines);
                 lines = ScriptOps.GenerateScriptGoStmt(lines);
                 lines = ScriptOps.SwapObjects(schema, table, chkDict, lines);
                 lines = ScriptOps.GenerateScriptGoStmt(lines);
-                lines = ScriptOps.GenerateScript(server, database, schema, table, lines, ObjType.TRG, OpType.DROP);
+                lines = ScriptOps.GenerateScript(server, database, schema, table, lines, ObjType.TRG, OpType.DROP, TblSize.BIG, null);
                 lines = ScriptOps.GenerateScriptGoStmt(lines);
-                lines = ScriptOps.GenerateScript(server, database, schema, table, lines, ObjType.TRG, OpType.CREATE);
+                lines = ScriptOps.GenerateScript(server, database, schema, table, lines, ObjType.TRG, OpType.CREATE, TblSize.BIG, null);
                 lines = ScriptOps.GenerateScriptGoStmt(lines);
 
                 return lines;
@@ -187,17 +207,6 @@ namespace SqlServerScripter {
                                 WHERE name IN( '{0}' )
                                 ";
                 sql = String.Format(sql, tableName);
-                //String qry = "";
-                //UNION ALL
-                //SELECT name, '" + ObjType.TRG.ToString() + @"' AS ObjectType FROM sys.all_objects
-                //WHERE parent_object_id IN(SELECT object_id FROM sys.all_objects WHERE name IN ( '{0}' ) )  
-                //        AND type IN('TR')
-                //qry += " SELECT name FROM sys.all_objects WHERE name IN( '{0}' ) ";
-                //qry += " UNION ALL ";
-                //qry += " SELECT name FROM sys.all_objects WHERE parent_object_id IN(SELECT object_id FROM sys.all_objects WHERE name IN ( '{1}' ) ) ";
-                //qry += " UNION ALL ";
-                //qry += " SELECT name FROM sys.indexes WHERE object_id IN(SELECT object_id FROM sys.all_objects WHERE name IN ( '{2}' ) ) ";
-                //qry = String.Format(qry, tableName, tableName, tableName);
 
                 DataTable dt = new DataTable();
                 using (SqlConnection cn = new SqlConnection(connStr))
@@ -226,10 +235,8 @@ namespace SqlServerScripter {
                 if (line.StartsWith("CREATE TABLE")) {
                     string val = line;
                     foreach (CustomTable ct in data) {
-                        //string str = "[" + ct.ColumnName + "] [" + ct.OldDataType + "]";
                         string strPat = String.Format(pattern, ct.ColumnName, ct.OldDataType);
                         string strRpl = "[" + ct.ColumnName + "] [" + ct.NewDataType + "]";
-                        //val = val.Replace(str, strRpl);
                         val = Regex.Replace(val, strPat, strRpl, RegexOptions.IgnoreCase);
                     }
                     lines.Find(line).Value = val;
@@ -249,7 +256,6 @@ namespace SqlServerScripter {
                     if (!String.IsNullOrEmpty(de.Key.ToString())) {
                         foreach (String line in outLines) {
                             if (!Regex.IsMatch(line, INSERT_PAT, RegexOptions.IgnoreCase)) {
-                                //if (!line.StartsWith("INSERT INTO")) {
                                 String x = Regex.Replace(line, String.Format(CHECK_STR, de.Key.ToString(), de.Key.ToString()), de.Key.ToString() + SUFFIX_STR_NEW);
                                 if (x != line)
                                     outLines.Find(line).Value = x;
@@ -266,25 +272,3 @@ namespace SqlServerScripter {
 
     }
 }
-
-/* 
-
- SELECT 'EXEC dbo.sp_rename '''+name+''' , '''+ name+'Old' + ''';' AS Stmt
- FROM sys.all_objects WHERE parent_object_id IN(SELECT object_id FROM sys.all_objects WHERE name IN ( 'tblTimeHistDetail' ) )  
- UNION ALL 
- SELECT 'EXEC dbo.sp_rename '''+'tblTimeHistDetail.'+name+''' , '''+ name+'Old' + '''' + CASE WHEN is_unique=1 THEN ' ;' ELSE ' , ''INDEX'';' END AS Stmt
- FROM sys.indexes WHERE object_id IN(SELECT object_id FROM sys.all_objects WHERE name IN ( 'tblTimeHistDetail' ) ) 
- UNION ALL
- SELECT 'EXEC dbo.sp_rename '''+name+''' , '''+ name+'Old' + ''';' AS Stmt
- FROM sys.all_objects WHERE name IN( 'tblTimeHistDetail' )  
-
- SELECT 'EXEC dbo.sp_rename '''+name+''' , '''+ REPLACE(name,'New','') + ''';' AS Stmt
- FROM sys.all_objects WHERE parent_object_id IN(SELECT object_id FROM sys.all_objects WHERE name IN ( 'tblTimeHistDetailNew' ) )  
- UNION ALL 
- SELECT 'EXEC dbo.sp_rename '''+'tblTimeHistDetailNew.'+name+''' , '''+ REPLACE(name,'New','') + '''' + CASE WHEN is_unique=1 THEN ';' ELSE ' , ''INDEX'';' END AS Stmt
- FROM sys.indexes WHERE object_id IN(SELECT object_id FROM sys.all_objects WHERE name IN ( 'tblTimeHistDetailNew' ) ) 
- UNION ALL 
- SELECT 'EXEC dbo.sp_rename '''+name+''' , '''+ REPLACE(name,'New','') + ''';' AS Stmt
- FROM sys.all_objects WHERE name IN( 'tblTimeHistDetailNew' )  
-
-*/

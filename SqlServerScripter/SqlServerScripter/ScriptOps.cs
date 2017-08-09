@@ -15,6 +15,9 @@ namespace SqlServerScripter {
         const string DOT = ".";
         const string SEMI_COLON = " ; ";
         const string COMMA = " , ";
+        const string START = "START";
+        const string END = "END";
+        private static string SEP_STR = "PRINT '--------------------------------------';" + Environment.NewLine;
 
         public static LinkedList<String> SwapObjects(string schemaName, string tableName, OrderedDictionary chkDict, LinkedList<String> lines) {
             LOGGER.Info("Generating Script to swap Original to Old and then New to Original");
@@ -55,7 +58,7 @@ namespace SqlServerScripter {
         }
 
         private static string GetSwapLine(string line, string chk, string sql, string ownerObj, string fromObj, string toObj) {
-            if (chk == ObjType.INDEX.ToString())
+            if (chk == ObjType.INDEX_CLUST.ToString() || chk == ObjType.INDEX_NON_CLUST.ToString())
                 line = String.Format(sql, ownerObj, fromObj, toObj, ", N'INDEX'");
             else if (chk == ObjType.PKUQ.ToString())
                 line = String.Format(sql, ownerObj, fromObj, toObj, "");
@@ -66,7 +69,6 @@ namespace SqlServerScripter {
 
             return line;
         }
-
 
         public static LinkedList<String> GenerateScriptUseStmt(string database, LinkedList<String> lines) {
             LOGGER.Info("Generating Use Statement");
@@ -104,8 +106,8 @@ namespace SqlServerScripter {
             }
 
             string insertStmt = "INSERT INTO {0} ({1}) SELECT {1} FROM {2} ;";
-            string printStartStmt = "PRINT N'START - Inserting into {0}.{1}.{2}'";
-            string printFinishStmt = "PRINT N'FINISH - Inserting into {0}.{1}.{2}'";
+            string printStartStmt = "PRINT FORMAT(CURRENT_TIMESTAMP, 'MM-dd-yyyy HH:mm:ss') + N' START : Inserting into {0}.{1}.{2}'";
+            string printFinishStmt = "PRINT FORMAT(CURRENT_TIMESTAMP, 'MM-dd-yyyy HH:mm:ss') + N' END : Inserting into {0}.{1}.{2}'";
             string newTable = table + Kicker.SUFFIX_STR_NEW;
             string oldTable = table;
             lines.AddLast("SET QUOTED_IDENTIFIER ON;");
@@ -114,6 +116,7 @@ namespace SqlServerScripter {
             lines.AddLast(String.Format(printStartStmt, database, schema, table) + SEMI_COLON);
             lines.AddLast(String.Format(insertStmt, newTable, colString, oldTable));
             lines.AddLast(String.Format(printFinishStmt, database, schema, table) + SEMI_COLON);
+            lines.AddLast(SEP_STR);
             return lines;
         }
 
@@ -145,8 +148,60 @@ namespace SqlServerScripter {
             return lines;
         }
 
+        public static HashSet<string> GetRelevantObjects(String server, String database, string schema, String table, List<CustomTable> data) {
+            LOGGER.Info(String.Format("Getting relevant objects for {0}", database + DOT + schema + DOT + table));
+            HashSet<string> objects = new HashSet<string>();
 
-        public static LinkedList<String> GenerateScript(String server, String database, string schema, String table, LinkedList<String> lines, ObjType dot, OpType ot) {
+            Server srv = new Server(server);
+            Database db = srv.Databases[database];
+            db.DefaultSchema = schema;
+            StringBuilder sb = new StringBuilder();
+            Table tbl = db.Tables[table];
+            ScriptingOptions options = new ScriptingOptions();
+            options.ScriptSchema = true;
+            options.NoCommandTerminator = false;
+
+            foreach (CustomTable ct in data) {
+                string x = "";
+                foreach (Index idx in tbl.Indexes) {
+                    if (DoQuickCheck(idx.Script(options), ct.ColumnName)) {
+                        objects.Add(idx.Name);
+                        break;
+                    }
+                }
+                foreach (Check chk in tbl.Checks) {
+                    if (DoQuickCheck(chk.Script(options), ct.ColumnName)) {
+                        objects.Add(chk.Name);
+                        break;
+                    }
+                }
+                foreach (Column col in tbl.Columns) {
+                    if (col.DefaultConstraint != null) {
+                        if (DoQuickCheck(col.DefaultConstraint.Script(options), ct.ColumnName)) {
+                            objects.Add(col.DefaultConstraint.Name);
+                            break;
+                        }
+                    }
+                }
+            }
+            return objects;
+        }
+
+        public static bool DoQuickCheck(StringCollection collection, string col) {
+            string[] arr = new string[collection.Count];
+            if (collection.Count > 0) {
+                collection.CopyTo(arr, 0);
+                string str = String.Join(" ", arr);
+                string pattern = @"\b{0}\b";
+                if (Regex.IsMatch(str, String.Format(pattern, col), RegexOptions.IgnoreCase))
+                    return true;
+            }
+            return false;
+        }
+
+        public static LinkedList<String> GenerateScript(String server, String database, string schema, String table, LinkedList<String> lines
+                                                            , ObjType dot, OpType ot, TblSize ts, HashSet<string> relObjs) {
+
             LOGGER.Info("Generating " + ot.ToString() + " Script for " + dot.ToString());
             Server srv = new Server(server);
             Database db = srv.Databases[database];
@@ -154,8 +209,7 @@ namespace SqlServerScripter {
             StringBuilder sb = new StringBuilder();
             Table tbl = db.Tables[table];
 
-            string printStr = "PRINT N'{0} : {1} : {2}';";
-
+            string printStr = "PRINT FORMAT(CURRENT_TIMESTAMP, 'MM-dd-yyyy HH:mm:ss') + N' {0} {1} : {2} : {3}';";
             ScriptingOptions options = null;
 
             switch (ot) {
@@ -176,46 +230,127 @@ namespace SqlServerScripter {
             switch (dot) {
                 case ObjType.CKDF:
                     foreach (Check chk in tbl.Checks) {
-                        lines.AddLast(String.Format(printStr, ot.ToString(), dot.ToString(), chk.Name));
-                        foreach (string line in chk.Script(options))
-                            lines.AddLast(line + SEMI_COLON);
+
+                        if (ts != TblSize.SMALL) {
+                            lines.AddLast(String.Format(printStr, START, ot.ToString(), dot.ToString(), chk.Name));
+                            foreach (string line in chk.Script(options))
+                                lines.AddLast(line + SEMI_COLON);
+                            lines.AddLast(String.Format(printStr, END, ot.ToString(), dot.ToString(), chk.Name));
+                            lines.AddLast(SEP_STR);
+                            lines = ScriptOps.GenerateScriptGoStmt(lines);
+                        } else {
+                            if (relObjs.Contains(chk.Name)) {
+                                lines.AddLast(String.Format(printStr, START, ot.ToString(), dot.ToString(), chk.Name));
+                                foreach (string line in chk.Script(options))
+                                    lines.AddLast(line + SEMI_COLON);
+                                lines.AddLast(String.Format(printStr, END, ot.ToString(), dot.ToString(), chk.Name));
+                                lines.AddLast(SEP_STR);
+                                lines = ScriptOps.GenerateScriptGoStmt(lines);
+                            }
+                        }
+
                     }
                     foreach (Column col in tbl.Columns) {
                         if (col.DefaultConstraint != null) {
-                            lines.AddLast(String.Format(printStr, ot.ToString(), dot.ToString(), col.DefaultConstraint.Name));
-                            foreach (string line in col.DefaultConstraint.Script(options))
-                                lines.AddLast(line + SEMI_COLON);
+
+                            if (ts != TblSize.SMALL) {
+                                lines.AddLast(String.Format(printStr, START, ot.ToString(), dot.ToString(), col.DefaultConstraint.Name));
+                                foreach (string line in col.DefaultConstraint.Script(options))
+                                    lines.AddLast(line + SEMI_COLON);
+                                lines.AddLast(String.Format(printStr, END, ot.ToString(), dot.ToString(), col.DefaultConstraint.Name));
+                                lines.AddLast(SEP_STR);
+                                lines = ScriptOps.GenerateScriptGoStmt(lines);
+                            } else {
+                                if (relObjs.Contains(col.DefaultConstraint.Name)) {
+                                    lines.AddLast(String.Format(printStr, START, ot.ToString(), dot.ToString(), col.DefaultConstraint.Name));
+                                    foreach (string line in col.DefaultConstraint.Script(options))
+                                        lines.AddLast(line + SEMI_COLON);
+                                    lines.AddLast(String.Format(printStr, END, ot.ToString(), dot.ToString(), col.DefaultConstraint.Name));
+                                    lines.AddLast(SEP_STR);
+                                    lines = ScriptOps.GenerateScriptGoStmt(lines);
+                                }
+                            }
+
                         }
                     }
                     break;
-                case ObjType.INDEX:
+
+                case ObjType.INDEX_CLUST:
                     foreach (Index idx in tbl.Indexes) {
-                        lines.AddLast(String.Format(printStr, ot.ToString(), dot.ToString(), idx.Name));
-                        foreach (string line in idx.Script(options))
-                            lines.AddLast(line + SEMI_COLON);
+                        if (idx.IsClustered) {
+
+                            if (ts != TblSize.SMALL) {
+                                lines.AddLast(String.Format(printStr, START, ot.ToString(), dot.ToString(), idx.Name));
+                                foreach (string line in idx.Script(options))
+                                    lines.AddLast(line + SEMI_COLON);
+                                lines.AddLast(String.Format(printStr, END, ot.ToString(), dot.ToString(), idx.Name));
+                                lines.AddLast(SEP_STR);
+                                lines = ScriptOps.GenerateScriptGoStmt(lines);
+                            } else {
+                                if (relObjs.Contains(idx.Name)) {
+                                    lines.AddLast(String.Format(printStr, START, ot.ToString(), dot.ToString(), idx.Name));
+                                    foreach (string line in idx.Script(options))
+                                        lines.AddLast(line + SEMI_COLON);
+                                    lines.AddLast(String.Format(printStr, END, ot.ToString(), dot.ToString(), idx.Name));
+                                    lines.AddLast(SEP_STR);
+                                    lines = ScriptOps.GenerateScriptGoStmt(lines);
+                                }
+                            }
+
+                        }
                     }
                     break;
+
+                case ObjType.INDEX_NON_CLUST:
+                    foreach (Index idx in tbl.Indexes) {
+                        if (!idx.IsClustered) {
+
+                            if (ts != TblSize.SMALL) {
+                                lines.AddLast(String.Format(printStr, START, ot.ToString(), dot.ToString(), idx.Name));
+                                foreach (string line in idx.Script(options))
+                                    lines.AddLast(line + SEMI_COLON);
+                                lines.AddLast(String.Format(printStr, END, ot.ToString(), dot.ToString(), idx.Name));
+                                lines.AddLast(SEP_STR);
+                                lines = ScriptOps.GenerateScriptGoStmt(lines);
+                            } else {
+                                if (relObjs.Contains(idx.Name)) {
+                                    lines.AddLast(String.Format(printStr, START, ot.ToString(), dot.ToString(), idx.Name));
+                                    foreach (string line in idx.Script(options))
+                                        lines.AddLast(line + SEMI_COLON);
+                                    lines.AddLast(String.Format(printStr, END, ot.ToString(), dot.ToString(), idx.Name));
+                                    lines.AddLast(SEP_STR);
+                                    lines = ScriptOps.GenerateScriptGoStmt(lines);
+                                }
+                            }
+
+                        }
+                    }
+                    break;
+
                 case ObjType.TRG:
                     string dropTrg = "DROP TRIGGER [{0}].[{1}]";
                     switch (ot) {
                         case OpType.CREATE:
                             string pattern = @"create[\s]+trigger\b";
                             foreach (Trigger trg in tbl.Triggers) {
-                                lines.AddLast(String.Format(printStr, ot.ToString(), dot.ToString(), trg.Name));
+                                lines.AddLast(String.Format(printStr, START, ot.ToString(), dot.ToString(), trg.Name));
                                 foreach (string line in trg.Script(options)) {
-                                    //if (line.StartsWith("CREATE"))
-                                    //    lines = ScriptOps.GenerateScriptGoStmt(lines);
-                                    if (Regex.IsMatch(line,pattern,RegexOptions.IgnoreCase))
+                                    if (Regex.IsMatch(line, pattern, RegexOptions.IgnoreCase))
                                         lines = ScriptOps.GenerateScriptGoStmt(lines);
                                     lines.AddLast(line + SEMI_COLON);
                                 }
+                                lines.AddLast(String.Format(printStr, END, ot.ToString(), dot.ToString(), trg.Name));
+                                lines.AddLast(SEP_STR);
+                                lines = ScriptOps.GenerateScriptGoStmt(lines);
                             }
                             break;
                         case OpType.DROP:
-                            //+ SUFFIX_STR_OLD
                             foreach (Trigger trg in tbl.Triggers) {
-                                lines.AddLast(String.Format(printStr, ot.ToString(), dot.ToString(), trg.Name));
+                                lines.AddLast(String.Format(printStr, START, ot.ToString(), dot.ToString(), trg.Name));
                                 lines.AddLast(String.Format(dropTrg, schema, trg.Name) + SEMI_COLON);
+                                lines.AddLast(String.Format(printStr, END, ot.ToString(), dot.ToString(), trg.Name));
+                                lines.AddLast(SEP_STR);
+                                lines = ScriptOps.GenerateScriptGoStmt(lines);
                             }
                             break;
                     }
@@ -224,8 +359,11 @@ namespace SqlServerScripter {
                     foreach (Statistic stats in tbl.Statistics) {
                         foreach (string line in stats.Script(options)) {
                             if (!String.IsNullOrEmpty(line)) {
-                                lines.AddLast(String.Format(printStr, ot.ToString(), dot.ToString(), stats.Name));
+                                lines.AddLast(String.Format(printStr, START, ot.ToString(), dot.ToString(), stats.Name));
                                 lines.AddLast(line + SEMI_COLON);
+                                lines.AddLast(String.Format(printStr, END, ot.ToString(), dot.ToString(), stats.Name));
+                                lines.AddLast(SEP_STR);
+                                lines = ScriptOps.GenerateScriptGoStmt(lines);
                             }
                         }
                     }
@@ -264,7 +402,6 @@ namespace SqlServerScripter {
                     //options.ScriptDrops = true;
                     //options.ToFileOnly = true;
 
-
                     StringCollection coll = tbl.Script(options);
                     foreach (string str in coll) {
                         lines.AddLast(str + SEMI_COLON);
@@ -277,143 +414,5 @@ namespace SqlServerScripter {
             return null;
         }
 
-
-
-
-
-        //public static LinkedList<String> GenerateScriptConstraints(String server, String database, string schema, String table, LinkedList<String> lines) {
-        //    LOGGER.Info("Generating Constraint Scripts");
-        //    Server srv = new Server(server);
-        //    Database db = srv.Databases[database];
-        //    db.DefaultSchema = schema;
-        //    StringBuilder sb = new StringBuilder();
-        //    Table tbl = db.Tables[table];
-
-        //    foreach (Check chk in tbl.Checks) {
-        //        ScriptingOptions options = new ScriptingOptions();
-        //        options.ScriptSchema = true;
-        //        lines.AddLast("PRINT N'Creating Constraint : " + chk.Name + "';");
-        //        foreach (string line in chk.Script(options)) {
-        //            lines.AddLast(line + SEMI_COLON);
-        //        }
-        //    }
-
-        //    foreach (Column col in tbl.Columns) {
-        //        if (col.DefaultConstraint != null) {
-        //            lines.AddLast("PRINT N'Creating Constraint : " + col.DefaultConstraint.Name + "';");
-        //            foreach (string line in col.DefaultConstraint.Script()) {
-        //                lines.AddLast(line + SEMI_COLON);
-        //            }
-        //        }
-        //    }
-        //    return lines;
-        //}
-
-        //public static LinkedList<String> GenerateScriptIndexes(String server, String database, String schema, String table, LinkedList<String> lines) {
-        //    LOGGER.Info("Generating Index Scripts");
-        //    Server srv = new Server(server);
-        //    Database db = srv.Databases[database];
-        //    db.DefaultSchema = schema;
-        //    StringBuilder sb = new StringBuilder();
-        //    Table tbl = db.Tables[table];
-
-        //    foreach (Index idx in tbl.Indexes) {
-        //        ScriptingOptions options = new ScriptingOptions();
-        //        options.ScriptSchema = true;
-        //        options.NoCommandTerminator = false;
-        //        lines.AddLast("PRINT N'Creating Index : " + idx.Name + "';");
-        //        foreach (string line in idx.Script(options))
-        //            lines.AddLast(line + SEMI_COLON);
-        //    }
-
-        //    return lines;
-        //}
-
-        //public static LinkedList<String> GenerateScriptDropConstraints(String server, String database, string schema, String table, LinkedList<String> lines) {
-        //    LOGGER.Info("Generating Drop Constraints Script");
-        //    Server srv = new Server(server);
-        //    Database db = srv.Databases[database];
-        //    db.DefaultSchema = schema;
-        //    StringBuilder sb = new StringBuilder();
-        //    Table tbl = db.Tables[table];
-
-        //    foreach (Check chk in tbl.Checks) {
-        //        ScriptingOptions options = new ScriptingOptions();
-        //        options.ScriptDrops = true;
-        //        options.NoCommandTerminator = false;
-        //        foreach (string line in chk.Script(options))
-        //            lines.AddLast(line + SEMI_COLON);
-        //    }
-
-        //    foreach (Column col in tbl.Columns) {
-        //        if (col.DefaultConstraint != null) {
-        //            ScriptingOptions options = new ScriptingOptions();
-        //            options.ScriptDrops = true;
-        //            options.NoCommandTerminator = false;
-        //            foreach (string line in col.DefaultConstraint.Script(options))
-        //                lines.AddLast(line + SEMI_COLON);
-        //        }
-        //    }
-
-        //    return lines;
-        //}
-
-
-        //public static LinkedList<String> GenerateScriptDropTriggers(String server, String database, string schema, String table, LinkedList<String> lines) {
-        //    LOGGER.Info("Generating Drop Triggers Script");
-        //    Server srv = new Server(server);
-        //    Database db = srv.Databases[database];
-        //    db.DefaultSchema = schema;
-        //    StringBuilder sb = new StringBuilder();
-        //    Table tbl = db.Tables[table];
-
-        //    foreach (Trigger trg in tbl.Triggers) {
-        //        ScriptingOptions options = new ScriptingOptions();
-        //        options.ScriptDrops = true;
-        //        options.NoCommandTerminator = false;
-        //        foreach (string line in trg.Script(options))
-        //            lines.AddLast(line + SEMI_COLON);
-        //    }
-
-        //    return lines;
-        //}
-
-        //public static LinkedList<String> GenerateScriptDropIndexes(String server, String database, string schema, String table, LinkedList<String> lines) {
-        //    LOGGER.Info("Generating Drop Indexes Script");
-        //    Server srv = new Server(server);
-        //    Database db = srv.Databases[database];
-        //    db.DefaultSchema = schema;
-        //    StringBuilder sb = new StringBuilder();
-        //    Table tbl = db.Tables[table];
-
-        //    foreach (Index idx in tbl.Indexes) {
-        //        ScriptingOptions options = new ScriptingOptions();
-        //        options.ScriptDrops = true;
-        //        options.NoCommandTerminator = false;
-        //        foreach (string line in idx.Script(options))
-        //            lines.AddLast(line + SEMI_COLON);
-        //    }
-
-        //    return lines;
-        //}
-
-        //public static LinkedList<String> GenerateScriptDropStatistics(String server, String database, string schema, String table, LinkedList<String> lines) {
-        //    LOGGER.Info("Generating Drop Statistics Script");
-        //    Server srv = new Server(server);
-        //    Database db = srv.Databases[database];
-        //    db.DefaultSchema = schema;
-        //    StringBuilder sb = new StringBuilder();
-        //    Table tbl = db.Tables[table];
-
-        //    foreach (Statistic stats in tbl.Statistics) {
-        //        ScriptingOptions options = new ScriptingOptions();
-        //        options.ScriptDrops = true;
-        //        options.NoCommandTerminator = false;
-        //        foreach (string line in stats.Script(options))
-        //            lines.AddLast(line + SEMI_COLON);
-        //    }
-
-        //    return lines;
-        //}
     }
 }

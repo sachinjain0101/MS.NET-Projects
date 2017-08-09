@@ -63,7 +63,6 @@ namespace ExcelParser {
 
             Kicker k = new Kicker();
             string inputDir = ConfigurationManager.AppSettings["INPUT_DIR"].ToString();
-            //inputDir = @"C:\Users\sachin.jain\Google Drive\#PeopleNet-Work\Reporting Project\Report Templates_";
 
             LinkedList<String> outLines = new LinkedList<string>();
             foreach (string file in Directory.EnumerateFiles(inputDir)) {

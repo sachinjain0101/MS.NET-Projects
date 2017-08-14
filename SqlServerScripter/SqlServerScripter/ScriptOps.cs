@@ -4,10 +4,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace SqlServerScripter {
     class ScriptOps {
@@ -17,7 +15,7 @@ namespace SqlServerScripter {
         const string COMMA = " , ";
         const string START = "START";
         const string END = "END";
-        private static string SEP_STR = "PRINT '--------------------------------------';" + Environment.NewLine;
+
 
         public static LinkedList<String> SwapObjects(string schemaName, string tableName, OrderedDictionary chkDict, LinkedList<String> lines) {
             LOGGER.Info("Generating Script to swap Original to Old and then New to Original");
@@ -29,10 +27,10 @@ namespace SqlServerScripter {
                 string obj = de.Key.ToString();
 
                 string fromObj = obj;
-                string toObj = obj + Kicker.SUFFIX_STR_OLD;
+                string toObj = obj + Global.SUFFIX_STR_OLD;
                 string ownerObj = schemaName + DOT + tableName + DOT;
 
-                line = GetSwapLine(line, de.Value.ToString(), sql, ownerObj, fromObj, toObj);
+                line = GetSwapLine(line, (ObjType)de.Value, sql, ownerObj, fromObj, toObj);
                 if (!String.IsNullOrEmpty(line)) {
                     lines.AddLast("PRINT N'Renaming " + fromObj + " to " + toObj + "';");
                     lines.AddLast(line + SEMI_COLON);
@@ -43,29 +41,38 @@ namespace SqlServerScripter {
                 line = "";
                 string obj = de.Key.ToString();
 
-                string fromObj = obj + Kicker.SUFFIX_STR_NEW;
+                string fromObj = obj + Global.SUFFIX_STR_NEW;
                 string toObj = obj;
-                string ownerObj = schemaName + DOT + tableName + Kicker.SUFFIX_STR_NEW + DOT;
+                string ownerObj = schemaName + DOT + tableName + Global.SUFFIX_STR_NEW + DOT;
 
-                line = GetSwapLine(line, de.Value.ToString(), sql, ownerObj, fromObj, toObj);
+                line = GetSwapLine(line, (ObjType)de.Value, sql, ownerObj, fromObj, toObj);
                 if (!String.IsNullOrEmpty(line)) {
                     lines.AddLast("PRINT N'Renaming " + fromObj + " to " + toObj + "';");
                     lines.AddLast(line + SEMI_COLON);
                 }
             }
 
+            lines.AddLast(Global.END_STR);
             return lines;
         }
 
-        private static string GetSwapLine(string line, string chk, string sql, string ownerObj, string fromObj, string toObj) {
-            if (chk == ObjType.INDEX_CLUST.ToString() || chk == ObjType.INDEX_NON_CLUST.ToString())
-                line = String.Format(sql, ownerObj, fromObj, toObj, ", N'INDEX'");
-            else if (chk == ObjType.PKUQ.ToString())
-                line = String.Format(sql, ownerObj, fromObj, toObj, "");
-            else if (chk == ObjType.TABLE.ToString())
-                line = String.Format(sql, "", fromObj, toObj, "");
-            else if (chk == ObjType.CKDF.ToString())
-                line = String.Format(sql, "", fromObj, toObj, "");
+        private static string GetSwapLine(string line, ObjType chk, string sql, string ownerObj, string fromObj, string toObj) {
+
+            switch (chk) {
+                case ObjType.INDEX_CLUST:
+                case ObjType.INDEX_NON_CLUST:
+                    line = String.Format(sql, ownerObj, fromObj, toObj, ", N'INDEX'");
+                    break;
+                case ObjType.PKUQ:
+                    line = String.Format(sql, ownerObj, fromObj, toObj, "");
+                    break;
+                case ObjType.TABLE:
+                    line = String.Format(sql, "", fromObj, toObj, "");
+                    break;
+                case ObjType.CKDF:
+                    line = String.Format(sql, "", fromObj, toObj, "");
+                    break;
+            }
 
             return line;
         }
@@ -76,15 +83,16 @@ namespace SqlServerScripter {
             lines.AddLast(String.Format(use, database));
             lines.AddLast("PRINT N'Using Database : " + database + "';");
             lines.AddLast("");
+            lines.AddLast(Global.END_STR);
             return lines;
         }
 
-        public static LinkedList<String> GenerateScriptGoStmt(LinkedList<String> lines) {
-            LOGGER.Info("Generating Go Statement");
-            lines.AddLast("GO");
-            lines.AddLast("");
-            return lines;
-        }
+        //public static LinkedList<String> GenerateScriptGoStmt(LinkedList<String> lines) {
+        //    LOGGER.Info("Generating Go Statement");
+        //    lines.AddLast("GO");
+        //    lines.AddLast("");
+        //    return lines;
+        //}
 
         public static LinkedList<String> GenerateScriptInsert(String server, String database, string schema, String table, LinkedList<String> lines) {
             LOGGER.Info("Generating Insert INTO Script");
@@ -108,7 +116,7 @@ namespace SqlServerScripter {
             string insertStmt = "INSERT INTO {0} ({1}) SELECT {1} FROM {2} ;";
             string printStartStmt = "PRINT FORMAT(CURRENT_TIMESTAMP, 'MM-dd-yyyy HH:mm:ss') + N' START : Inserting into {0}.{1}.{2}'";
             string printFinishStmt = "PRINT FORMAT(CURRENT_TIMESTAMP, 'MM-dd-yyyy HH:mm:ss') + N' END : Inserting into {0}.{1}.{2}'";
-            string newTable = table + Kicker.SUFFIX_STR_NEW;
+            string newTable = table + Global.SUFFIX_STR_NEW;
             string oldTable = table;
             lines.AddLast("SET QUOTED_IDENTIFIER ON;");
             lines.AddLast("SET IDENTITY_INSERT " + newTable + " ON;");
@@ -116,7 +124,7 @@ namespace SqlServerScripter {
             lines.AddLast(String.Format(printStartStmt, database, schema, table) + SEMI_COLON);
             lines.AddLast(String.Format(insertStmt, newTable, colString, oldTable));
             lines.AddLast(String.Format(printFinishStmt, database, schema, table) + SEMI_COLON);
-            lines.AddLast(SEP_STR);
+            lines.AddLast(Global.END_STR);
             return lines;
         }
 
@@ -130,7 +138,7 @@ namespace SqlServerScripter {
             Table tbl = db.Tables[table];
 
             string alterStmt = "ALTER TABLE {0}.{1} ALTER COLUMN {2} {3} {4}";
-            string printStmt = "PRINT N'Altering {0}.{1}.{2}.{3}'";
+            string printStmt = "PRINT FORMAT(CURRENT_TIMESTAMP, 'MM-dd-yyyy HH:mm:ss') + N' {0} : Altering {1}.{2}.{3}.{4}'";
             foreach (CustomTable ct in data) {
                 foreach (Column col in tbl.Columns) {
                     if (col.Name.ToLower() == ct.ColumnName.ToLower()) {
@@ -139,12 +147,13 @@ namespace SqlServerScripter {
                             x = "NOT NULL";
                         else
                             x = "NULL";
-                        lines.AddLast(String.Format(printStmt, database, schema, table, ct.ColumnName) + SEMI_COLON);
+                        lines.AddLast(String.Format(printStmt, START, database, schema, table, ct.ColumnName) + SEMI_COLON);
                         lines.AddLast(String.Format(alterStmt, schema, table, ct.ColumnName, ct.NewDataType, x) + SEMI_COLON);
+                        lines.AddLast(String.Format(printStmt, END, database, schema, table, ct.ColumnName) + SEMI_COLON);
                     }
                 }
             }
-
+            lines.AddLast(Global.END_STR);
             return lines;
         }
 
@@ -162,28 +171,24 @@ namespace SqlServerScripter {
             options.NoCommandTerminator = false;
 
             foreach (CustomTable ct in data) {
-                string x = "";
-                foreach (Index idx in tbl.Indexes) {
-                    if (DoQuickCheck(idx.Script(options), ct.ColumnName)) {
+                foreach (Index idx in tbl.Indexes)
+                    if (DoQuickCheck(idx.Script(options), ct.ColumnName))
                         objects.Add(idx.Name);
-                        break;
-                    }
-                }
-                foreach (Check chk in tbl.Checks) {
-                    if (DoQuickCheck(chk.Script(options), ct.ColumnName)) {
+
+                foreach (Check chk in tbl.Checks)
+                    if (DoQuickCheck(chk.Script(options), ct.ColumnName))
                         objects.Add(chk.Name);
-                        break;
-                    }
-                }
-                foreach (Column col in tbl.Columns) {
-                    if (col.DefaultConstraint != null) {
-                        if (DoQuickCheck(col.DefaultConstraint.Script(options), ct.ColumnName)) {
+
+                foreach (Column col in tbl.Columns)
+                    if (col.DefaultConstraint != null)
+                        if (DoQuickCheck(col.DefaultConstraint.Script(options), ct.ColumnName))
                             objects.Add(col.DefaultConstraint.Name);
-                            break;
-                        }
-                    }
-                }
+
+                foreach (Statistic stat in tbl.Statistics)
+                    if (DoQuickCheck(stat.Script(options), ct.ColumnName))
+                        objects.Add(stat.Name);
             }
+
             return objects;
         }
 
@@ -236,16 +241,14 @@ namespace SqlServerScripter {
                             foreach (string line in chk.Script(options))
                                 lines.AddLast(line + SEMI_COLON);
                             lines.AddLast(String.Format(printStr, END, ot.ToString(), dot.ToString(), chk.Name));
-                            lines.AddLast(SEP_STR);
-                            lines = ScriptOps.GenerateScriptGoStmt(lines);
+                            lines.AddLast(Global.END_STR);
                         } else {
                             if (relObjs.Contains(chk.Name)) {
                                 lines.AddLast(String.Format(printStr, START, ot.ToString(), dot.ToString(), chk.Name));
                                 foreach (string line in chk.Script(options))
                                     lines.AddLast(line + SEMI_COLON);
                                 lines.AddLast(String.Format(printStr, END, ot.ToString(), dot.ToString(), chk.Name));
-                                lines.AddLast(SEP_STR);
-                                lines = ScriptOps.GenerateScriptGoStmt(lines);
+                                lines.AddLast(Global.END_STR);
                             }
                         }
 
@@ -258,16 +261,14 @@ namespace SqlServerScripter {
                                 foreach (string line in col.DefaultConstraint.Script(options))
                                     lines.AddLast(line + SEMI_COLON);
                                 lines.AddLast(String.Format(printStr, END, ot.ToString(), dot.ToString(), col.DefaultConstraint.Name));
-                                lines.AddLast(SEP_STR);
-                                lines = ScriptOps.GenerateScriptGoStmt(lines);
+                                lines.AddLast(Global.END_STR);
                             } else {
                                 if (relObjs.Contains(col.DefaultConstraint.Name)) {
                                     lines.AddLast(String.Format(printStr, START, ot.ToString(), dot.ToString(), col.DefaultConstraint.Name));
                                     foreach (string line in col.DefaultConstraint.Script(options))
                                         lines.AddLast(line + SEMI_COLON);
                                     lines.AddLast(String.Format(printStr, END, ot.ToString(), dot.ToString(), col.DefaultConstraint.Name));
-                                    lines.AddLast(SEP_STR);
-                                    lines = ScriptOps.GenerateScriptGoStmt(lines);
+                                    lines.AddLast(Global.END_STR);
                                 }
                             }
 
@@ -284,16 +285,14 @@ namespace SqlServerScripter {
                                 foreach (string line in idx.Script(options))
                                     lines.AddLast(line + SEMI_COLON);
                                 lines.AddLast(String.Format(printStr, END, ot.ToString(), dot.ToString(), idx.Name));
-                                lines.AddLast(SEP_STR);
-                                lines = ScriptOps.GenerateScriptGoStmt(lines);
+                                lines.AddLast(Global.END_STR);
                             } else {
                                 if (relObjs.Contains(idx.Name)) {
                                     lines.AddLast(String.Format(printStr, START, ot.ToString(), dot.ToString(), idx.Name));
                                     foreach (string line in idx.Script(options))
                                         lines.AddLast(line + SEMI_COLON);
                                     lines.AddLast(String.Format(printStr, END, ot.ToString(), dot.ToString(), idx.Name));
-                                    lines.AddLast(SEP_STR);
-                                    lines = ScriptOps.GenerateScriptGoStmt(lines);
+                                    lines.AddLast(Global.END_STR);
                                 }
                             }
 
@@ -310,16 +309,14 @@ namespace SqlServerScripter {
                                 foreach (string line in idx.Script(options))
                                     lines.AddLast(line + SEMI_COLON);
                                 lines.AddLast(String.Format(printStr, END, ot.ToString(), dot.ToString(), idx.Name));
-                                lines.AddLast(SEP_STR);
-                                lines = ScriptOps.GenerateScriptGoStmt(lines);
+                                lines.AddLast(Global.END_STR);
                             } else {
                                 if (relObjs.Contains(idx.Name)) {
                                     lines.AddLast(String.Format(printStr, START, ot.ToString(), dot.ToString(), idx.Name));
                                     foreach (string line in idx.Script(options))
                                         lines.AddLast(line + SEMI_COLON);
                                     lines.AddLast(String.Format(printStr, END, ot.ToString(), dot.ToString(), idx.Name));
-                                    lines.AddLast(SEP_STR);
-                                    lines = ScriptOps.GenerateScriptGoStmt(lines);
+                                    lines.AddLast(Global.END_STR);
                                 }
                             }
 
@@ -336,12 +333,11 @@ namespace SqlServerScripter {
                                 lines.AddLast(String.Format(printStr, START, ot.ToString(), dot.ToString(), trg.Name));
                                 foreach (string line in trg.Script(options)) {
                                     if (Regex.IsMatch(line, pattern, RegexOptions.IgnoreCase))
-                                        lines = ScriptOps.GenerateScriptGoStmt(lines);
+                                        lines.AddLast(Global.END_STR);
                                     lines.AddLast(line + SEMI_COLON);
                                 }
                                 lines.AddLast(String.Format(printStr, END, ot.ToString(), dot.ToString(), trg.Name));
-                                lines.AddLast(SEP_STR);
-                                lines = ScriptOps.GenerateScriptGoStmt(lines);
+                                lines.AddLast(Global.END_STR);
                             }
                             break;
                         case OpType.DROP:
@@ -349,21 +345,33 @@ namespace SqlServerScripter {
                                 lines.AddLast(String.Format(printStr, START, ot.ToString(), dot.ToString(), trg.Name));
                                 lines.AddLast(String.Format(dropTrg, schema, trg.Name) + SEMI_COLON);
                                 lines.AddLast(String.Format(printStr, END, ot.ToString(), dot.ToString(), trg.Name));
-                                lines.AddLast(SEP_STR);
-                                lines = ScriptOps.GenerateScriptGoStmt(lines);
+                                lines.AddLast(Global.END_STR);
                             }
                             break;
                     }
                     break;
                 case ObjType.STAT:
                     foreach (Statistic stats in tbl.Statistics) {
-                        foreach (string line in stats.Script(options)) {
-                            if (!String.IsNullOrEmpty(line)) {
-                                lines.AddLast(String.Format(printStr, START, ot.ToString(), dot.ToString(), stats.Name));
-                                lines.AddLast(line + SEMI_COLON);
-                                lines.AddLast(String.Format(printStr, END, ot.ToString(), dot.ToString(), stats.Name));
-                                lines.AddLast(SEP_STR);
-                                lines = ScriptOps.GenerateScriptGoStmt(lines);
+
+                        if (ts != TblSize.SMALL) {
+                            foreach (string line in stats.Script(options)) {
+                                if (!String.IsNullOrEmpty(line)) {
+                                    lines.AddLast(String.Format(printStr, START, ot.ToString(), dot.ToString(), stats.Name));
+                                    lines.AddLast(line + SEMI_COLON);
+                                    lines.AddLast(String.Format(printStr, END, ot.ToString(), dot.ToString(), stats.Name));
+                                    lines.AddLast(Global.END_STR);
+                                }
+                            }
+                        } else {
+                            if (relObjs.Contains(stats.Name)) {
+                                foreach (string line in stats.Script(options)) {
+                                    if (!String.IsNullOrEmpty(line)) {
+                                        lines.AddLast(String.Format(printStr, START, ot.ToString(), dot.ToString(), stats.Name));
+                                        lines.AddLast(line + SEMI_COLON);
+                                        lines.AddLast(String.Format(printStr, END, ot.ToString(), dot.ToString(), stats.Name));
+                                        lines.AddLast(Global.END_STR);
+                                    }
+                                }
                             }
                         }
                     }
@@ -407,6 +415,7 @@ namespace SqlServerScripter {
                         lines.AddLast(str + SEMI_COLON);
                     }
                 }
+                lines.AddLast(Global.END_STR);
                 return lines;
             } catch (Exception err) {
                 LOGGER.Error(err.Message);

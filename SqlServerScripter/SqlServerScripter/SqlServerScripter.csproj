@@ -52,8 +52,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BeforeAfterOps.cs" />
     <Compile Include="CustomTable.cs" />
     <Compile Include="ExcelOps.cs" />
+    <Compile Include="Global.cs" />
     <Compile Include="Kicker.cs" />
     <Compile Include="ObjType.cs" />
     <Compile Include="OpType.cs" />

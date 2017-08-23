@@ -6,24 +6,27 @@ using System.Threading.Tasks;
 
 namespace ExcelParser {
     public class ReportMetaData {
-        string _reportName = "";
-        string _reportCode = "";
-        string _reportOrder = "";
-        string _dbName = "";
-        string _spName = "";
-        string _xlsFileName = "";
+        string programName = "";
+        string reportCode = "";
+        string sortOrder = "";
+        string dbName = "";
+        string spName = "";
+        string xlsFileName = "";
+        string columnAlias = "";
+        string columnCalc = "";
         const string COMMA = ",";
 
-        public string ReportName { get => _reportName; set => _reportName = value; }
-        public string ReportCode { get => _reportCode; set => _reportCode = value; }
-        public string ReportOrder { get => _reportOrder; set => _reportOrder = value; }
-        public string DbName { get => _dbName; set => _dbName = value; }
-        public string SpName { get => _spName; set => _spName = value; }
-        public string XlsFileName { get => _xlsFileName; set => _xlsFileName = value; }
-
+        public string ProgramName { get => programName; set => programName = value; }
+        public string ReportCode { get => reportCode; set => reportCode = value; }
+        public string SortOrder { get => sortOrder; set => sortOrder = value; }
+        public string DbName { get => dbName; set => dbName = value; }
+        public string SpName { get => spName; set => spName = value; }
+        public string XlsFileName { get => xlsFileName; set => xlsFileName = value; }
+        public string ColumnAlias { get => columnAlias; set => columnAlias = value; }
+        public string ColumnCalc { get => columnCalc; set => columnCalc = value; }
 
         public override string ToString() {
-            string outstring = this.ReportCode + COMMA + this.ReportName + COMMA + this.ReportOrder + COMMA + this.DbName + COMMA + this.SpName + COMMA + this.XlsFileName;
+            string outstring = this.ReportCode + COMMA + this.ProgramName + COMMA + this.SortOrder + COMMA + this.XlsFileName; //this.DbName + COMMA + this.SpName + COMMA 
             return outstring;
         }
     }

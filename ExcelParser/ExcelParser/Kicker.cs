@@ -21,7 +21,7 @@ namespace ExcelParser {
         const string DATE_FORMAT = "yyyyMMddHHmmss";
         const string SP_COLS = "output_{0}.csv";
         const string DUMMY = "dummy_{0}.csv";
-        const string COL_SEP = ",";
+        const string COL_SEP = "#";
         const string SPACE = " ";
         const string NEWLINE = "\n";
         const string DQUOTE = "\"";
@@ -44,11 +44,11 @@ namespace ExcelParser {
             if (split1.Length > 1) {
                 split2 = split1[1].Split(new string[] { "By" }, StringSplitOptions.None);
                 if (split2.Length > 1) {
-                    rmd.ReportOrder = split2[1];
+                    rmd.SortOrder = split2[1];
                 }
                 rmd.ReportCode = split2[0];
             }
-            rmd.ReportName = split1[0];
+            rmd.ProgramName = split1[0];
 
             return rmd;
         }
@@ -56,51 +56,77 @@ namespace ExcelParser {
         public static void Main(string[] args) {
             XmlConfigurator.Configure();
 
-            LOGGER.Info("===> START");
-            string rptDb = ConfigurationManager.AppSettings["RPT_DB_NAME"].ToString();
+            LOGGER.Info("START");
+            string db = ConfigurationManager.AppSettings["DB_NAME"].ToString();
             string server = ConfigurationManager.AppSettings["SRV_NAME"].ToString();
-            string connStr = string.Format(ConfigurationManager.ConnectionStrings["CONN_STR"].ToString(), server, rptDb);
+            string connStr = string.Format(ConfigurationManager.ConnectionStrings["CONN_STR"].ToString(), server, db);
+
+
+            DBOps dop = new DBOps();
+            dop.ConnStr = connStr;
+
+            dop.DropTable();
+            dop.CreateTable();
 
             Kicker k = new Kicker();
             string inputDir = ConfigurationManager.AppSettings["INPUT_DIR"].ToString();
 
             LinkedList<String> outLines = new LinkedList<string>();
             foreach (string file in Directory.EnumerateFiles(inputDir)) {
-                Console.WriteLine("================");
-                Console.WriteLine("Processing: " + file);
-                ReportMetaData rmd = k.ProcessFileName(file);
+                    LOGGER.Info("Processing: " + file);
+                    ReportMetaData rmd = k.ProcessFileName(file);
 
+                try {
+                    if (rmd.XlsFileName.ToUpper().Contains(".XLS")) {
+                        XlData xld = k.getExcelData(file);
 
-                if (rmd.XlsFileName.ToUpper().Contains(".XLS")) {
-                    XlData xld = k.getExcelData(file);
+                        if (xld != null) {
 
-                    if (xld != null) {
-                        rmd.DbName = xld.DbName;
-                        rmd.SpName = xld.SpName;
+                            foreach (string data in xld.Lines) {
+                                rmd.DbName = xld.DbName;
+                                rmd.SpName = xld.SpName;
+                                string[] arr = data.Split(Char.Parse(COL_SEP));
+                                if (arr.Length > 2)
+                                    rmd.ColumnAlias = arr[2];
 
-                        foreach (string data in xld.Lines) {
-                            outLines.AddLast(rmd.ToString() + COMMA + data);
-                            Console.WriteLine(rmd.ToString() + COMMA + data);
+                                if (arr.Length > 3)
+                                    rmd.ColumnCalc = arr[3];
+
+                                dop.InsertIntoTable(rmd);
+                                //outLines.AddLast(rmd.ToString() + COMMA + data);
+                                //Console.WriteLine(rmd.ToString() + COMMA + data);
+                            }
+
+                            //string outFile = string.Format(SP_COLS, xld.DbName, xld.SpName, DateTime.Now.ToString(DATE_FORMAT));
+                            //File.WriteAllLines(outFile, xld.Lines);
+                        } else {
+                            rmd.ColumnAlias = "???";
+                            rmd.ColumnCalc = "???";
+                            dop.InsertIntoTable(rmd);
+                            //outLines.AddLast(rmd.ToString() + COMMA + "???");
+                            //Console.WriteLine(rmd.ToString() + COMMA + "???");
+                            //string outFile = string.Format(DUMMY, DateTime.Now.ToString(DATE_FORMAT));
+                            //File.WriteAllLines(outFile, new List<string>() { "dummy" });
                         }
-
-                        //string outFile = string.Format(SP_COLS, xld.DbName, xld.SpName, DateTime.Now.ToString(DATE_FORMAT));
-                        //File.WriteAllLines(outFile, xld.Lines);
                     } else {
-                        outLines.AddLast(rmd.ToString() + COMMA + "???");
-                        Console.WriteLine(rmd.ToString() + COMMA + "???");
-                        //string outFile = string.Format(DUMMY, DateTime.Now.ToString(DATE_FORMAT));
-                        //File.WriteAllLines(outFile, new List<string>() { "dummy" });
+                        rmd.ColumnAlias = "???";
+                        rmd.ColumnCalc = "???";
+                        dop.InsertIntoTable(rmd);
+                        //outLines.AddLast(rmd.ToString() + COMMA + "???");
+                        //Console.WriteLine(rmd.ToString() + COMMA + "???");
                     }
-                } else {
-                    outLines.AddLast(rmd.ToString() + COMMA + "???");
-                    Console.WriteLine(rmd.ToString() + COMMA + "???");
+                }catch(Exception e) {
+                    rmd.ColumnAlias = "ERROR";
+                    rmd.ColumnCalc = "ERROR";
+                    dop.InsertIntoTable(rmd);
                 }
             }
 
-            string outFile = string.Format(SP_COLS, DateTime.Now.ToString(DATE_FORMAT));
-            File.WriteAllLines(outFile, outLines);
-
-            Console.ReadLine();
+            //string outFile = string.Format(SP_COLS, DateTime.Now.ToString(DATE_FORMAT));
+            //File.WriteAllLines(outFile, outLines);
+            
+            LOGGER.Info("END");
+            //Console.ReadLine();
         }
 
         static Dictionary<int, int> getCellPosition(Excel.Range xlRange, string searchStr) {
@@ -186,7 +212,7 @@ namespace ExcelParser {
             xlRange.Rows.EntireColumn.Hidden = false;
 
             Dictionary<int, int> kvDtl = getCellPosition(xlRange, DTL_STR);
-            Console.WriteLine("");
+            //Console.WriteLine("");
             if (kvDtl == null)
                 return null;
             Dictionary<int, int> kvHdrSt = getHeaderCellPosition(xlRange);

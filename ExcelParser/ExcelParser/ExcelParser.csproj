@@ -51,13 +51,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DBOps.cs" />
     <Compile Include="Kicker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReportMetaData.cs" />
     <Compile Include="XlData.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

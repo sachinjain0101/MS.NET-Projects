@@ -20,6 +20,13 @@ namespace TestRegularExpressions {
             "insertinto"
             };
 
+            string str = @"TimeHistory,usp_RPT_YOH_Holiday,Employee Name,""LastName, FirstName""";
+            Console.WriteLine(str);
+            string[] arr = Regex.Split(str, @",");
+
+            List<string> lst = Regex.Matches(str, @"\w+|""[\w,]*""") .Cast<Match>() .Select(m => m.Value) .ToList();
+
+
             string[] sen = { "RecordId int", "RecordId  INT", "[RecordId] [int]","[RecordID]  [int]","[RecordID] [int]"};
 
             string pattern = @"create[\s]+trigger\b|insert[\s]+into\b";

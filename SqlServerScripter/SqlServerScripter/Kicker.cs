@@ -79,7 +79,7 @@ namespace SqlServerScripter {
 
 
             LOGGER.Info("===> DONE");
-            //Console.ReadLine();
+            Console.ReadLine();
         }
 
         public static void MoveToOutputDir(string server, string file) {

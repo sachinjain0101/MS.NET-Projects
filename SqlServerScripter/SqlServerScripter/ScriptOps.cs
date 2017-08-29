@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -328,11 +329,13 @@ namespace SqlServerScripter {
                     string dropTrg = "DROP TRIGGER [{0}].[{1}]";
                     switch (ot) {
                         case OpType.CREATE:
-                            string pattern = @"create[\s]+trigger\b";
+                            string patCreate = @"create[\s]+trigger\b";
+                            string patAlter = @"alter[\s]+table\b";
                             foreach (Trigger trg in tbl.Triggers) {
                                 lines.AddLast(String.Format(printStr, START, ot.ToString(), dot.ToString(), trg.Name));
                                 foreach (string line in trg.Script(options)) {
-                                    if (Regex.IsMatch(line, pattern, RegexOptions.IgnoreCase))
+                                    if (Regex.IsMatch(line, patCreate, RegexOptions.IgnoreCase)
+                                        || Regex.IsMatch(line, patAlter, RegexOptions.IgnoreCase))
                                         lines.AddLast(Global.END_STR);
                                     lines.AddLast(line + SEMI_COLON);
                                 }
@@ -387,6 +390,30 @@ namespace SqlServerScripter {
             return lines;
         }
 
+        public static Dictionary<string,string> FindDependencies(String server, String database, String schema) {
+
+            Server srv = new Server(server);
+            Database db = srv.Databases[database];
+            db.DefaultSchema = schema;
+            StringBuilder sb = new StringBuilder();
+            var tables = db.Tables.OfType<Table>()
+                .Where(tb => tb.IsSystemObject == false)
+                .Cast<SqlSmoObject>()
+                .ToArray();
+
+            Dictionary<string, string> dict = new Dictionary<string, string>();
+            DependencyWalker dw = new DependencyWalker(srv);
+            DependencyTree dt = dw.DiscoverDependencies(tables.ToArray(), DependencyType.Parents);
+            DependencyCollection depcoll = dw.WalkDependencies(dt);
+            List<string> l = new List<string>();
+            HashSet<string> s = new HashSet<string>();
+            foreach (DependencyCollectionNode dep in depcoll) {
+                if (dep.Urn.Type == "Table")
+                    l.Add(dep.Urn.GetAttribute("Name"));
+                s.Add(dep.Urn.Type);
+            }
+            return dict;
+        }
 
         public static LinkedList<String> GenerateScriptTable(String server, String database, String schema, String table, LinkedList<String> lines) {
             LOGGER.Info("Generating Table Script");
@@ -409,7 +436,6 @@ namespace SqlServerScripter {
                     //options.ExtendedProperties = true;
                     //options.ScriptDrops = true;
                     //options.ToFileOnly = true;
-
                     StringCollection coll = tbl.Script(options);
                     foreach (string str in coll) {
                         lines.AddLast(str + SEMI_COLON);

@@ -406,7 +406,20 @@ namespace SqlServerScripter {
             DependencyTree dt = dw.DiscoverDependencies(tables.ToArray(), DependencyType.Parents);
             DependencyCollection depcoll = dw.WalkDependencies(dt);
             List<string> l = new List<string>();
+
+            DependencyNode dn = dt.NextSibling;
+
+
+
             HashSet<string> s = new HashSet<string>();
+
+            DependencyNode fn = dt.FirstChild;
+            Console.WriteLine("");
+            DependencyNode fn1 = dt.FirstChild;
+            DependencyNode fn2 = dt.FirstChild;
+            DependencyNode fn3 = dt.FirstChild;
+            DependencyNode fn4 = dt.FirstChild;
+
             foreach (DependencyCollectionNode dep in depcoll) {
                 if (dep.Urn.Type == "Table")
                     l.Add(dep.Urn.GetAttribute("Name"));

@@ -47,6 +47,8 @@ namespace SqlServerScripter {
 
                 LinkedList<String> outLines = new LinkedList<string>();
 
+//                ScriptOps.FindDependencies(server, database, schema);
+
                 switch (size) {
                     case TblSize.BIG:
                         smallOp = false;

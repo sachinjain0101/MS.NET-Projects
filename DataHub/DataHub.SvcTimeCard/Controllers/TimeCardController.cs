@@ -68,10 +68,12 @@ namespace DataHub.SvcRecalcs.Controllers
             return (List<TimeHistDetailEF>)timecards;
         }
 
-        [HttpGet("GetTimeCards")]
-        public List<TimeHistDetail> GetTimeCards() {
+        [HttpGet("GetTimeCards/{numRecs}")]
+        public List<TimeHistDetail> GetTimeCards(int numRecs) {
             List<Recalc> recalcs = new List<Recalc>();
-            var webRequest = System.Net.WebRequest.Create("http://localhost:51002/Recalcs/TopN/10000");
+            string url = "http://localhost:51002/Recalcs/TopN/{0}";
+            url = String.Format(url, numRecs);
+            var webRequest = System.Net.WebRequest.Create(url);
             if (webRequest != null) {
                 webRequest.Method = WebRequestMethods.Http.Get;
                 webRequest.ContentType = "application/json";
@@ -91,7 +93,7 @@ namespace DataHub.SvcRecalcs.Controllers
             string msg = "<html><font face=\"verdana\"><p><strong>Woohoo!</strong> You made it...</p>" +
                 "<p>This is the Peoplenet DataHub Service : <strong>TimeCard Service</strong></p><p>&nbsp;</p>" +
                 "<p>Here are the relevant API Calls:</p>" +
-                "<ul><li><p>/Recalcs/{RecordId}</p></li><li><p>/Recalcs/TopN/{NumberOfRecords}</p></li></ul></font></ html > ";
+                "<ul><li><p>/TimeCard/GetTimeCards/100</p></li><li><p>/TimeCard/GetRecalcs</p></li></ul></font></ html > ";
             return msg;
         }
 

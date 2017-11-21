@@ -58,7 +58,19 @@ namespace DataHub.SvcTimeCard.Services {
                 LOGGER.Info("Recalc Insert : " + DateTime.Now.Subtract(current).Milliseconds);
 
                 //***********************************************************************
-                sql = @"SELECT thd.* FROM dbo.tblTimeHistDetail (NOLOCK) thd
+                sql = @"SELECT 
+                        thd.RecordID, thd.Client, thd.GroupCode, thd.SSN, thd.PayrollPeriodEndDate, thd.MasterPayrollDate, thd.SiteNo, thd.DeptNo, 
+                        thd.JobID, thd.TransDate, thd.EmpStatus, thd.BillRate, thd.BillOTRate, thd.BillOTRateOverride, thd.PayRate, thd.ShiftNo, 
+                        thd.InDay, thd.InTime, thd.OutDay, thd.OutTime, thd.Hours, thd.Dollars, thd.ClockAdjustmentNo, thd.AdjustmentCode, thd.AdjustmentName, 
+                        thd.TransType, thd.Changed_DeptNo, thd.Changed_InPunch, thd.Changed_OutPunch, thd.AgencyNo, thd.InSrc, thd.OutSrc, thd.DaylightSavTime, 
+                        thd.Holiday, thd.RegHours, thd.OT_Hours, thd.DT_Hours, thd.RegDollars, thd.OT_Dollars, thd.DT_Dollars, thd.RegBillingDollars, 
+                        thd.OTBillingDollars, thd.DTBillingDollars, thd.CountAsOT, thd.RegDollars4, thd.OT_Dollars4, thd.DT_Dollars4, thd.RegBillingDollars4, 
+                        thd.OTBillingDollars4, thd.DTBillingDollars4, thd.xAdjHours, thd.AprvlStatus, thd.AprvlStatus_UserID, thd.AprvlStatus_Date, 
+                        thd.AprvlAdjOrigRecID, thd.HandledByImporter, thd.AprvlAdjOrigClkAdjNo, thd.ClkTransNo, thd.ShiftDiffClass, thd.AllocatedRegHours, 
+                        thd.AllocatedOT_Hours, thd.AllocatedDT_Hours, thd.Borrowed, thd.UserCode, thd.DivisionID, thd.CostID, thd.ShiftDiffAmt, thd.OutUserCode, 
+                        thd.ActualInTime, thd.ActualOutTime, thd.InSiteNo, thd.OutSiteNo, thd.InVerified, thd.OutVerified, thd.InClass, thd.OutClass, thd.InTimestamp, 
+                        thd.outTimestamp, thd.CrossoverStatus, thd.CrossoverOtherGroup, thd.InRoundOFF, thd.OutRoundOFF, thd.AprvlStatus_Mobile 
+                        FROM dbo.tblTimeHistDetail (NOLOCK) thd 
                            JOIN {0} wrk ON wrk.Client=thd.Client AND wrk.GroupCode=thd.GroupCode AND wrk.SSN=thd.SSN AND wrk.PPED=thd.PayrollPeriodEndDate;";
                 sql = String.Format(sql, tempTblName);
                 current = DateTime.Now;

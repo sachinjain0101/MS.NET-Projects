@@ -41,6 +41,16 @@ namespace DataHub.SvcRecalcs.Controllers
             return msg;
         }
 
+        [HttpPost]
+        [Route("UpdateRecalcs")]
+        public IActionResult UpdateRecalcs([FromBody]List<Recalc> recalcs) {
+            if (recalcs == null) {
+                return StatusCode(500);
+            }
+
+            return Json(recalcs);
+        }
+
 
 
     }

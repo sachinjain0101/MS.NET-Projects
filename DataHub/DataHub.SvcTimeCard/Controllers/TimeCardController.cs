@@ -28,8 +28,6 @@ namespace DataHub.SvcRecalcs.Controllers
         [HttpGet("GetRecalcs")]
         public List<Recalc> GetRecalcs(int recordId) {
             List<Recalc> recalcs = new List<Recalc>();
-
-
             var webRequest = System.Net.WebRequest.Create("http://localhost:51002/Recalcs/TopN/100");
             if (webRequest != null) {
                 webRequest.Method = WebRequestMethods.Http.Get;
@@ -39,14 +37,12 @@ namespace DataHub.SvcRecalcs.Controllers
                         recalcs = JsonConvert. DeserializeObject<List<Recalc>>(reader.ReadToEnd());
             }
             _timeCardService.GetTimeCardData(recalcs);
-
             return recalcs;
         }
 
         [HttpGet("GetTimeCardsEF")]
         public List<TimeHistDetailEF> GetTimeCardsEF() {
             List<Recalc> recalcs = new List<Recalc>();
-
             var webRequest = System.Net.WebRequest.Create("http://localhost:51002/Recalcs/TopN/100");
             if (webRequest != null) {
                 webRequest.Method = WebRequestMethods.Http.Get;
@@ -55,11 +51,7 @@ namespace DataHub.SvcRecalcs.Controllers
                 using (var reader = new StreamReader(reponse))
                     recalcs = JsonConvert.DeserializeObject<List<Recalc>>(reader.ReadToEnd());
             }
-
             return _timeCardService.GetTimeCards(recalcs);
-
-
-
         }
 
         [HttpGet("TopN/{numRecs}")]
@@ -75,15 +67,12 @@ namespace DataHub.SvcRecalcs.Controllers
             StringContent content = new StringContent(JsonConvert.SerializeObject(recalcs), Encoding.UTF8, "application/json");
             Task<byte[]> t = content.ReadAsByteArrayAsync();
             var byteContent = t.Result;
-
             if (webRequest != null) {
                 webRequest.Method = WebRequestMethods.Http.Post;
                 webRequest.ContentType = "application/json";
-                webRequest.Timeout = 20000;
 
                 using (Stream dataStream = webRequest.GetRequestStream())
                     dataStream.Write(byteContent, 0, byteContent.Length);
-
 
                 using (var reponse = webRequest.GetResponse().GetResponseStream())
                 using (var reader = new StreamReader(reponse))
@@ -106,7 +95,6 @@ namespace DataHub.SvcRecalcs.Controllers
                 using (var reader = new StreamReader(reponse))
                     recalcs = JsonConvert.DeserializeObject<List<Recalc>>(reader.ReadToEnd());
             }
-
             return _timeCardService.GetTimeCardData(recalcs);
 
             
@@ -121,8 +109,5 @@ namespace DataHub.SvcRecalcs.Controllers
                 "<ul><li><p>/TimeCard/GetTimeCards/100</p></li><li><p>/TimeCard/GetRecalcs</p></li></ul></font></ html > ";
             return msg;
         }
-
-
-
     }
 }

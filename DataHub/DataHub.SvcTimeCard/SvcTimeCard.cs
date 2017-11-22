@@ -6,8 +6,7 @@ using System.Reflection;
 using log4net.Config;
 
 namespace DataHub.SvcTimeCard {
-    public class Program
-    {
+    public class SvcTimeCard {
         private static readonly ILog LOGGER = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         public static void Main(string[] args)
@@ -20,7 +19,7 @@ namespace DataHub.SvcTimeCard {
 
         public static IWebHost BuildWebHost(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
-                .UseStartup<StartupSvcTimeCard>()
+                .UseStartup<SvcTimeCardStartup>()
                 .Build();
     }
 }

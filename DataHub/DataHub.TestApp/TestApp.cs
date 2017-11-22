@@ -13,7 +13,7 @@ namespace DataHub.TestApp {
         public List<int> Scores;
     }
 
-    public class Program {
+    public class TestApp {
 
         // Create a data source by using a collection initializer.
         public static List<Student> students = new List<Student>

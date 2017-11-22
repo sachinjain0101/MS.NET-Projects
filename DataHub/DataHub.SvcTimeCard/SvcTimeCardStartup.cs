@@ -8,16 +8,14 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using DataHub.SvcRecalcs.DataAccess;
-using Microsoft.EntityFrameworkCore;
-using DataHub.SvcRecalcs.Services;
-using Microsoft.AspNetCore.Mvc.Formatters;
 using DataHub.Commons;
+using Microsoft.EntityFrameworkCore;
+using DataHub.SvcTimeCard.DataAccess;
+using DataHub.SvcTimeCard.Services;
 
-namespace DataHub.SvcRecalcs {
-    public class StartupSvcRecalcs
-    {
-        public StartupSvcRecalcs(IConfiguration configuration)
+namespace DataHub.SvcTimeCard {
+    public class SvcTimeCardStartup {
+        public SvcTimeCardStartup(IConfiguration configuration)
         {
             Configuration = configuration;
         }
@@ -27,9 +25,11 @@ namespace DataHub.SvcRecalcs {
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<DbEnvSettings>(options => Configuration.GetSection("DbEnvSettings").Bind(options));
+            services.AddDbContext<TimeCardContext>(options => options.UseSqlServer(Configuration.GetConnectionString("TimeHistory")));
             services.AddMvc(options => options.OutputFormatters.Add(new HtmlOutputFormatter()));
-            services.AddDbContext<RecalcsContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
-            services.AddTransient<IRecalcsService, RecalcsService>();
+            services.RegisterServices();
+            services.AddTransient<ITimeCardService, TimeCardService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -42,7 +42,14 @@ namespace DataHub.SvcRecalcs {
 
             app.UseMvc();
         }
+
     }
 
+    public static class ServiceCollectionExtensions {
+        public static IServiceCollection RegisterServices(this IServiceCollection services) {
+            services.AddTransient<ISqlConn,SqlConn>();
+            return services;
+        }
+    }
 
 }

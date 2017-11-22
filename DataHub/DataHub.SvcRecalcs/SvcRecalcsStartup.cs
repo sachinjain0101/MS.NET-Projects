@@ -8,14 +8,16 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using DataHub.SvcRecalcs.DataAccess;
+using Microsoft.EntityFrameworkCore;
+using DataHub.SvcRecalcs.Services;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using DataHub.Commons;
-using DataHub.SvcKafkaPublisher.Services;
 
-namespace DataHub.SvcKafkaPublisher
-{
-    public class StartupSvcKafkaPublisher
+namespace DataHub.SvcRecalcs {
+    public class SvcRecalcsStartup
     {
-        public StartupSvcKafkaPublisher(IConfiguration configuration)
+        public SvcRecalcsStartup(IConfiguration configuration)
         {
             Configuration = configuration;
         }
@@ -26,8 +28,8 @@ namespace DataHub.SvcKafkaPublisher
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc(options => options.OutputFormatters.Add(new HtmlOutputFormatter()));
-            services.AddTransient<IKafkaPubService, KafkaPubService>();
-            services.AddMvc();
+            services.AddDbContext<RecalcsContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddTransient<IRecalcsService, RecalcsService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -41,4 +43,6 @@ namespace DataHub.SvcKafkaPublisher
             app.UseMvc();
         }
     }
+
+
 }

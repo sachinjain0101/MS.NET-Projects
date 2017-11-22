@@ -8,12 +8,12 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace DataHub.TestHttpClient {
-    class Program {
+    class TestHttpClient {
         List<Recalc> _recalcs = new List<Recalc>();
 
         static void Main(string[] args) {
             Console.WriteLine("Hello World!");
-            Program p = new Program();
+            TestHttpClient p = new TestHttpClient();
             Task<List<Recalc>> t1 = p.GetData();
             t1.Wait();
             var x = t1.Result;

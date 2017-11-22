@@ -9,13 +9,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using DataHub.Commons;
-using Microsoft.EntityFrameworkCore;
-using DataHub.SvcTimeCard.DataAccess;
-using DataHub.SvcTimeCard.Services;
+using DataHub.SvcKafkaPublisher.Services;
 
-namespace DataHub.SvcTimeCard {
-    public class StartupSvcTimeCard {
-        public StartupSvcTimeCard(IConfiguration configuration)
+namespace DataHub.SvcKafkaPublisher
+{
+    public class SvcKafkaPublisherStartup
+    {
+        public SvcKafkaPublisherStartup(IConfiguration configuration)
         {
             Configuration = configuration;
         }
@@ -25,11 +25,9 @@ namespace DataHub.SvcTimeCard {
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<DbEnvSettings>(options => Configuration.GetSection("DbEnvSettings").Bind(options));
-            services.AddDbContext<TimeCardContext>(options => options.UseSqlServer(Configuration.GetConnectionString("TimeHistory")));
             services.AddMvc(options => options.OutputFormatters.Add(new HtmlOutputFormatter()));
-            services.RegisterServices();
-            services.AddTransient<ITimeCardService, TimeCardService>();
+            services.AddTransient<IKafkaPubService, KafkaPubService>();
+            services.AddMvc();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -42,14 +40,5 @@ namespace DataHub.SvcTimeCard {
 
             app.UseMvc();
         }
-
     }
-
-    public static class ServiceCollectionExtensions {
-        public static IServiceCollection RegisterServices(this IServiceCollection services) {
-            services.AddTransient<ISqlConn,SqlConn>();
-            return services;
-        }
-    }
-
 }

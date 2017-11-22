@@ -8,27 +8,24 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using log4net;
-using log4net.Config;
 using System.Reflection;
+using log4net.Config;
 
-namespace DataHub.SvcKafkaPublisher
-{
-    public class Program
-    {
-
+namespace DataHub.SvcRecalcs {
+    public class SvcRecalcs {
         private static readonly ILog LOGGER = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         public static void Main(string[] args)
         {
             var logRepository = LogManager.GetRepository(Assembly.GetEntryAssembly());
             XmlConfigurator.Configure(logRepository, new FileInfo("log4net.config"));
-            LOGGER.Info("Kafka Publisher Service: Started");
+            LOGGER.Info("Recalcs Service: Started");
             BuildWebHost(args).Run();
         }
 
         public static IWebHost BuildWebHost(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
-                .UseStartup<StartupSvcKafkaPublisher>()
+                .UseStartup<SvcRecalcsStartup>()
                 .Build();
     }
 }

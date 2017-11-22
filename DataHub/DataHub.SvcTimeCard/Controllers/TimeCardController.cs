@@ -82,6 +82,11 @@ namespace DataHub.SvcRecalcs.Controllers
 
         }
 
+        [HttpPost("GetPostTimeCards")]
+        public List<TimeHistDetail> GetPostTimeCards([FromBody]List<Recalc> recalcs) {
+            return _timeCardService.GetTimeCardData(recalcs);
+        }
+
         [HttpGet("GetTimeCards/{numRecs}")]
         public List<TimeHistDetail> GetTimeCards(int numRecs) {
             List<Recalc> recalcs = new List<Recalc>();
@@ -96,8 +101,6 @@ namespace DataHub.SvcRecalcs.Controllers
                     recalcs = JsonConvert.DeserializeObject<List<Recalc>>(reader.ReadToEnd());
             }
             return _timeCardService.GetTimeCardData(recalcs);
-
-            
         }
 
         [Produces("text/html")]

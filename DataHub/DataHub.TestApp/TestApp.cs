@@ -38,7 +38,7 @@ namespace DataHub.TestApp {
 
             DataTable dt = new DataTable();
 
-            using (SqlConnection conn = new SqlConnection("Server=SJ;Database=TimeHistory;Trusted_Connection=True;"))
+            using (SqlConnection conn = new SqlConnection("Server=qa2-sql1,15150;Database=TimeHistory;Trusted_Connection=True;"))
             using (SqlCommand cmd = new SqlCommand("select top 10 * from dbo.tbltimehistdetail WHERE AprvlStatus_Mobile IS NULL", conn))
             using (SqlDataAdapter da = new SqlDataAdapter(cmd))
                 da.Fill(dt);

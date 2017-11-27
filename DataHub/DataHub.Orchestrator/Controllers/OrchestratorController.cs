@@ -23,8 +23,8 @@ namespace DataHub.Orchestrator.Controllers
             _urls = urls.Value;
         }
 
-        [HttpGet("StartProcess/{numRecs}")]
-        public List<TimeHistDetail> StartProcess(int numRecs) {
+        [HttpGet("StartCheck/{numRecs}")]
+        public List<TimeHistDetail> StartCheck(int numRecs) {
             string data = "";
             string url = "";
 
@@ -43,6 +43,34 @@ namespace DataHub.Orchestrator.Controllers
             url = _urls.UrlSvcTimeCard + "GetPostTimeCards";
             data = PostData<Recalc>(url,recalcs);
             List<TimeHistDetail> timecards = JsonConvert.DeserializeObject<List<TimeHistDetail>>(data);
+
+            return timecards;
+
+        }
+
+        [HttpGet("StartProcess/{numRecs}")]
+        public List<TimeHistDetail> StartProcess(int numRecs) {
+            string data = "";
+            string url = "";
+
+            List<Recalc> recalcs = new List<Recalc>();
+            url = _urls.UrlSvcRecalcs + "TopN/" + numRecs;
+            url = String.Format(url, numRecs);
+            var webRequest = System.Net.WebRequest.Create(url);
+            if (webRequest != null) {
+                webRequest.Method = WebRequestMethods.Http.Get;
+                webRequest.ContentType = "application/json";
+                using (var reponse = webRequest.GetResponse().GetResponseStream())
+                using (var reader = new StreamReader(reponse))
+                    recalcs = JsonConvert.DeserializeObject<List<Recalc>>(reader.ReadToEnd());
+            }
+
+            url = _urls.UrlSvcTimeCard + "GetPostTimeCards";
+            data = PostData<Recalc>(url, recalcs);
+            List<TimeHistDetail> timecards = JsonConvert.DeserializeObject<List<TimeHistDetail>>(data);
+
+            url = _urls.UrlSvcKafkaPub + "PostToKafka";
+            data = PostData<TimeHistDetail>(url, timecards);
 
             return timecards;
 

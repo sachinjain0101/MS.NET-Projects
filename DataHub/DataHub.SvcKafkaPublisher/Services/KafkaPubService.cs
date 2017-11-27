@@ -42,7 +42,7 @@ namespace DataHub.SvcKafkaPublisher.Services
             config.Add("linger.ms", 1);
 
             using (var producer = new Producer<string, string>(config, new StringSerializer(Encoding.UTF8), new StringSerializer(Encoding.UTF8))) {
-
+                int cntr = 0;
                 foreach (string text in list) {
 
                     var key = "";
@@ -53,10 +53,14 @@ namespace DataHub.SvcKafkaPublisher.Services
                         val = text;
                     }
 
-                    var deliveryReport = producer.ProduceAsync(topicName, key, val);
                     LOGGER.Info(text);
-                    //var result = deliveryReport.Result; // synchronously waits for message to be produced.
-                    //LOGGER.Info($"Partition: {result.Partition}, Offset: {result.Offset}");
+                    if (cntr < 1) {
+                        var deliveryReport = producer.ProduceAsync(topicName, key, val);
+                        var result = deliveryReport.Result; // synchronously waits for message to be produced.
+                        LOGGER.Info("First Message Published {Partition: "+ result.Partition+", Offset:"+result.Offset+"}");
+                    } else
+                        producer.ProduceAsync(topicName, key, val);
+                    cntr++;
                 }
             }
 

@@ -28,7 +28,7 @@ namespace DataHub.SvcKafkaPublisher.Controllers
         }
 
         [HttpPost("PostToKafka")]
-        public string PostToKafka(List<TimeHistDetail> thds)
+        public string PostToKafka([FromBody] List<TimeHistDetail> thds)
         {
             _kafkaPubService.PublishData(thds);
             return "done";

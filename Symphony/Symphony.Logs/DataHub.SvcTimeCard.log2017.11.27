@@ -1,0 +1,109 @@
+20171127 12:31:28 [1] INFO  DataHub.SvcTimeCard.SvcTimeCard - TimeCard Service: Started
+20171127 12:32:08 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Creation : 6
+20171127 12:32:08 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Recalc Insert : 68
+20171127 12:32:08 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - THD Select : 480
+20171127 12:32:08 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Drop : 5
+20171127 12:33:09 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Creation : 4
+20171127 12:33:09 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Recalc Insert : 32
+20171127 12:33:09 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - THD Select : 24
+20171127 12:33:09 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Drop : 3
+20171127 12:37:09 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Creation : 4
+20171127 12:37:09 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Recalc Insert : 31
+20171127 12:37:09 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - THD Select : 22
+20171127 12:37:09 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Drop : 3
+20171127 12:39:14 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Creation : 4
+20171127 12:39:14 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Recalc Insert : 33
+20171127 12:39:14 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - THD Select : 21
+20171127 12:39:14 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Drop : 4
+20171127 12:39:48 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Creation : 5
+20171127 12:39:48 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Recalc Insert : 335
+20171127 12:39:48 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - THD Select : 191
+20171127 12:39:48 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Drop : 4
+20171127 13:35:33 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Creation : 6
+20171127 13:35:33 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Recalc Insert : 43
+20171127 13:35:33 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - THD Select : 385
+20171127 13:35:33 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Drop : 4
+20171127 13:41:20 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Creation : 4
+20171127 13:41:20 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Recalc Insert : 343
+20171127 13:41:20 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - THD Select : 142
+20171127 13:41:20 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Drop : 4
+20171127 14:19:22 [1] INFO  DataHub.SvcTimeCard.SvcTimeCard - TimeCard Service: Started
+20171127 14:20:01 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Creation : 6
+20171127 14:20:01 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Recalc Insert : 60
+20171127 14:20:01 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - THD Select : 54
+20171127 14:20:01 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Drop : 5
+20171127 15:21:34 [9] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Creation : 4
+20171127 15:21:34 [9] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Recalc Insert : 33
+20171127 15:21:34 [9] INFO  DataHub.SvcTimeCard.Services.TimeCardService - THD Select : 24
+20171127 15:21:34 [9] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Drop : 4
+20171127 15:23:04 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Creation : 7
+20171127 15:23:04 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Recalc Insert : 41
+20171127 15:23:04 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - THD Select : 21
+20171127 15:23:04 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Drop : 4
+20171127 15:24:18 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Creation : 5
+20171127 15:24:18 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Recalc Insert : 47
+20171127 15:24:18 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - THD Select : 20
+20171127 15:24:18 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Drop : 4
+20171127 15:32:14 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Creation : 4
+20171127 15:32:14 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Recalc Insert : 44
+20171127 15:32:14 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - THD Select : 384
+20171127 15:32:14 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Drop : 4
+20171127 15:33:22 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Creation : 4
+20171127 15:33:23 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Recalc Insert : 47
+20171127 15:33:23 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - THD Select : 26
+20171127 15:33:23 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Drop : 4
+20171127 15:35:23 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Creation : 4
+20171127 15:35:23 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Recalc Insert : 33
+20171127 15:35:23 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - THD Select : 24
+20171127 15:35:23 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Drop : 4
+20171127 15:35:41 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Creation : 11
+20171127 15:35:43 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Recalc Insert : 287
+20171127 15:35:43 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - THD Select : 130
+20171127 15:35:43 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Drop : 43
+20171127 15:59:58 [1] INFO  DataHub.SvcTimeCard.SvcTimeCard - TimeCard Service: Started
+20171127 16:00:23 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Creation : 6
+20171127 16:00:23 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Recalc Insert : 60
+20171127 16:00:38 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - THD Select : 689
+20171127 16:00:38 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Drop : 4
+20171127 16:01:17 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Creation : 4
+20171127 16:01:17 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Recalc Insert : 33
+20171127 16:01:17 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - THD Select : 20
+20171127 16:01:17 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Drop : 4
+20171127 16:17:07 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Creation : 7
+20171127 16:17:07 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Recalc Insert : 41
+20171127 16:17:07 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - THD Select : 404
+20171127 16:17:07 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Drop : 15
+20171127 16:25:34 [1] INFO  DataHub.SvcTimeCard.SvcTimeCard - TimeCard Service: Started
+20171127 16:26:32 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Creation : 6
+20171127 16:26:32 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Recalc Insert : 64
+20171127 16:26:33 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - THD Select : 71
+20171127 16:26:33 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Drop : 5
+20171127 16:27:55 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Creation : 24
+20171127 16:27:55 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Recalc Insert : 363
+20171127 16:27:55 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - THD Select : 161
+20171127 16:27:55 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Drop : 5
+20171127 16:28:35 [9] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Creation : 22
+20171127 16:28:40 [9] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Recalc Insert : 943
+20171127 16:28:41 [9] INFO  DataHub.SvcTimeCard.Services.TimeCardService - THD Select : 950
+20171127 16:28:41 [9] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Drop : 4
+20171127 23:11:04 [1] INFO  DataHub.SvcTimeCard.SvcTimeCard - TimeCard Service: Started
+20171127 23:13:43 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Creation : 22
+20171127 23:13:45 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Recalc Insert : 904
+20171127 23:13:45 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - THD Select : 426
+20171127 23:13:46 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Drop : 17
+20171127 23:14:20 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Creation : 19
+20171127 23:14:20 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Recalc Insert : 149
+20171127 23:14:20 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - THD Select : 63
+20171127 23:14:20 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Drop : 14
+20171127 23:14:32 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Creation : 21
+20171127 23:14:34 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Recalc Insert : 6
+20171127 23:14:34 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - THD Select : 225
+20171127 23:14:34 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Drop : 62
+20171127 23:15:34 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Creation : 19
+20171127 23:15:38 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Recalc Insert : 677
+20171127 23:15:38 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - THD Select : 503
+20171127 23:15:38 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Drop : 20
+20171127 23:17:34 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Creation : 19
+20171127 23:17:39 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Recalc Insert : 508
+20171127 23:17:40 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - THD Select : 635
+20171127 23:17:40 [8] INFO  DataHub.SvcTimeCard.Services.TimeCardService - Temp Table Drop : 17

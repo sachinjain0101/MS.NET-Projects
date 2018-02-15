@@ -1,0 +1,46 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title></title>
+<script type="text/javascript"> function change() {
+    var selectBox = document.getElementById("show");
+    var selected =  selectBox.options[selectBox.selectedIndex].text;
+    var textarea = document.getElementById("ta");
+    var l = document.getElementById("lbl");
+    if(selected == 'YES'){
+        l.style.display="inline"
+        textarea.style.display="inline"
+    }
+    else{
+        l.style.display="none"
+        textarea.style.display="none"
+    }
+}</script>
+</head>
+<body>
+ 				<table cellspacing="8" width="800px;">
+
+<tr>
+    <td>
+        <div>
+            <label>Show text area</label>
+            <select id="show" class="form-control" name="show_text_area" onchange="change()">
+                <option value="1">YES</option>
+                <option value="0">NO</option>
+            </select>
+
+        </div>
+    </td>
+    <td>
+        <div>
+            <label id="lbl">Text area</label>
+            <textarea id="ta" class="form-control" type="text" name="text_area" placeholder="Write something" rows="5" cols="50" style="display: none"></textarea>
+        </div>
+    </td>
+</tr>
+</table>
+ 
+</body>
+</html>
+
